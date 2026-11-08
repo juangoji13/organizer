@@ -13,8 +13,11 @@ import {
   Sparkles
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { spring } from '@animate-ui/react/utils/motion';
 
 type TodaySection = 'clients' | 'personal';
+
+const tabSpring = { type: 'spring' as const, stiffness: 350, damping: 30 };
 
 export function TodayView() {
   const { jobs, personalGoals, toggleGoal, setActiveTab } = useWorkspace();
@@ -58,89 +61,151 @@ export function TodayView() {
       <div className="mb-5 sm:mb-6">
         <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-3">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
               {todayDateFormatted}
             </h1>
-            <div className="text-xs sm:text-sm text-zinc-500 font-normal mt-1 flex items-center gap-1.5 flex-wrap">
+            <div className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-normal mt-1 flex items-center gap-1.5 flex-wrap">
               <span>
                 {urgentJobs.length} {urgentJobs.length === 1 ? 'encargo' : 'encargos'} para hoy
               </span>
-              <span className="text-zinc-300">•</span>
+              <span className="text-zinc-300 dark:text-zinc-600">•</span>
               {/* Quick Link to Finance & Cobros */}
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setActiveTab('finance')}
-                className="font-mono tabular-nums text-zinc-700 font-medium hover:text-zinc-950 flex items-center gap-1 group transition-colors"
+                className="font-mono tabular-nums text-zinc-700 dark:text-zinc-300 font-medium hover:text-zinc-950 dark:hover:text-white flex items-center gap-1 group transition-colors"
                 title="Ir a Finanzas & Cobros"
               >
                 <span className="underline underline-offset-2">
                   ${todayPendingDebt.toLocaleString('es-CO')} COP por liquidar
                 </span>
-                <CreditCard className="w-3.5 h-3.5 text-zinc-400 group-hover:text-zinc-800 transition-colors" />
-              </button>
+                <CreditCard className="w-3.5 h-3.5 text-zinc-400 group-hover:text-zinc-800 dark:group-hover:text-zinc-200 transition-colors" />
+              </motion.button>
             </div>
           </div>
         </div>
 
-        {/* Unified Control Bar: Single Segmented Control + Subtle Inline Toggle */}
-        <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-          {/* Segmented Control */}
-          <div className="p-1 bg-zinc-100/90 border border-zinc-200/70 rounded-xl grid grid-cols-2 w-full sm:w-auto sm:min-w-[340px] select-none">
-            <button
+        {/* Unified Control Bar: Liquid Sliding Tabs for Sections and Filters */}
+        <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          {/* Segmented Control with Liquid layoutId */}
+          <div className="p-1 bg-zinc-100/90 dark:bg-zinc-900/90 border border-zinc-200/70 dark:border-white/10 rounded-xl grid grid-cols-2 w-full sm:w-auto sm:min-w-[340px] select-none">
+            <motion.button
               type="button"
+              whileTap={{ scale: 0.97 }}
               onClick={() => setTodaySection('clients')}
-              className={`py-1.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
+              className={`relative py-1.5 px-3 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 ${
                 todaySection === 'clients'
-                  ? 'bg-white text-zinc-950 shadow-xs'
-                  : 'text-zinc-500 hover:text-zinc-900'
+                  ? 'text-zinc-950 dark:text-zinc-100'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
             >
-              <Briefcase className="w-3.5 h-3.5" />
-              <span>Encargos Clientes</span>
-              <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold ${
-                todaySection === 'clients' ? 'bg-zinc-100 text-zinc-900' : 'bg-zinc-200 text-zinc-600'
-              }`}>
-                {clientCount}
+              {todaySection === 'clients' && (
+                <motion.div
+                  layoutId="todayViewSectionPill"
+                  className="absolute inset-0 bg-white dark:bg-zinc-800 rounded-lg shadow-xs"
+                  transition={tabSpring}
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-1.5">
+                <Briefcase className="w-3.5 h-3.5" />
+                <span>Encargos Clientes</span>
+                <span
+                  className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold transition-colors ${
+                    todaySection === 'clients'
+                      ? 'bg-zinc-100 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100'
+                      : 'bg-zinc-200/80 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+                  }`}
+                >
+                  {clientCount}
+                </span>
               </span>
-            </button>
+            </motion.button>
 
-            <button
+            <motion.button
               type="button"
+              whileTap={{ scale: 0.97 }}
               onClick={() => setTodaySection('personal')}
-              className={`py-1.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
+              className={`relative py-1.5 px-3 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 ${
                 todaySection === 'personal'
-                  ? 'bg-white text-zinc-950 shadow-xs'
-                  : 'text-zinc-500 hover:text-zinc-900'
+                  ? 'text-zinc-950 dark:text-zinc-100'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
             >
-              <GraduationCap className="w-3.5 h-3.5" />
-              <span>Tareas Propias</span>
-              <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold ${
-                todaySection === 'personal' ? 'bg-zinc-100 text-zinc-900' : 'bg-zinc-200 text-zinc-600'
-              }`}>
-                {personalCount}
+              {todaySection === 'personal' && (
+                <motion.div
+                  layoutId="todayViewSectionPill"
+                  className="absolute inset-0 bg-white dark:bg-zinc-800 rounded-lg shadow-xs"
+                  transition={tabSpring}
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-1.5">
+                <GraduationCap className="w-3.5 h-3.5" />
+                <span>Tareas Propias</span>
+                <span
+                  className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold transition-colors ${
+                    todaySection === 'personal'
+                      ? 'bg-zinc-100 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100'
+                      : 'bg-zinc-200/80 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+                  }`}
+                >
+                  {personalCount}
+                </span>
               </span>
-            </button>
+            </motion.button>
           </div>
 
-          {/* Discrete "Solo pendientes" Filter Toggle */}
-          <button
-            type="button"
-            onClick={() => setFilterToday(filterToday === 'pending' ? 'all' : 'pending')}
-            className={`inline-flex items-center gap-2 self-start sm:self-center px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all select-none border ${
-              filterToday === 'pending'
-                ? 'bg-zinc-900 text-white border-zinc-900 shadow-xs'
-                : 'bg-white text-zinc-600 border-zinc-200/80 hover:bg-zinc-50 hover:text-zinc-900'
-            }`}
-            title={filterToday === 'pending' ? 'Mostrando solo pendientes. Toca para ver todos' : 'Toca para filtrar solo pendientes'}
-          >
-            <span
-              className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                filterToday === 'pending' ? 'bg-amber-400' : 'bg-zinc-300'
+          {/* Liquid Sliding Filter: [Todos] vs [Pendientes] */}
+          <div className="p-1 bg-zinc-100/90 dark:bg-zinc-900/90 border border-zinc-200/70 dark:border-white/10 rounded-xl flex items-center select-none self-start sm:self-center">
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setFilterToday('all')}
+              className={`relative py-1 px-3 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                filterToday === 'all'
+                  ? 'text-zinc-950 dark:text-zinc-100'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
-            />
-            <span>Solo pendientes</span>
-          </button>
+              title="Mostrar todos los ítems de hoy"
+            >
+              {filterToday === 'all' && (
+                <motion.div
+                  layoutId="todayFilterPill"
+                  className="absolute inset-0 bg-white dark:bg-zinc-800 rounded-lg shadow-xs"
+                  transition={tabSpring}
+                />
+              )}
+              <span className="relative z-10">Todos</span>
+            </motion.button>
+
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setFilterToday('pending')}
+              className={`relative py-1 px-3 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                filterToday === 'pending'
+                  ? 'text-zinc-950 dark:text-zinc-100'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+              }`}
+              title="Filtrar solo pendientes"
+            >
+              {filterToday === 'pending' && (
+                <motion.div
+                  layoutId="todayFilterPill"
+                  className="absolute inset-0 bg-white dark:bg-zinc-800 rounded-lg shadow-xs"
+                  transition={tabSpring}
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-1.5">
+                <span
+                  className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                    filterToday === 'pending' ? 'bg-amber-500' : 'bg-zinc-300 dark:bg-zinc-600'
+                  }`}
+                />
+                <span>Pendientes</span>
+              </span>
+            </motion.button>
+          </div>
         </div>
       </div>
 
@@ -163,16 +228,16 @@ export function TodayView() {
 
           {/* Empty State */}
           {displayedJobs.length === 0 && (
-            <div className="text-center py-12 px-4 rounded-2xl border border-zinc-200/80 bg-zinc-50/40 shadow-xs">
-              <div className="w-9 h-9 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto mb-2.5 border border-emerald-200/50">
+            <div className="text-center py-12 px-4 rounded-2xl border border-zinc-200/80 dark:border-white/10 bg-zinc-50/40 dark:bg-zinc-900/30 shadow-xs">
+              <div className="w-9 h-9 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 flex items-center justify-center mx-auto mb-2.5 border border-emerald-200/50 dark:border-emerald-800/40">
                 <CheckCircle2 className="w-4 h-4" />
               </div>
-              <p className="text-sm font-semibold text-zinc-800">
+              <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
                 {filterToday === 'pending'
                   ? '¡Todo listo! No tienes entregas pendientes para hoy.'
                   : 'No hay entregas programadas para hoy.'}
               </p>
-              <p className="text-xs text-zinc-500 mt-1 max-w-xs mx-auto">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-xs mx-auto">
                 Puedes consultar &quot;Trabajos&quot; en la barra inferior para ver los siguientes días.
               </p>
             </div>
@@ -183,15 +248,16 @@ export function TodayView() {
       {/* SECTION 2: PRIORIDADES PROPIAS */}
       {todaySection === 'personal' && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs text-zinc-500 mb-2 px-1">
+          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-2 px-1">
             <span>Metas académicas y desarrollo personal para hoy</span>
-            <button
+            <motion.button
+              whileTap={{ scale: 0.95 }}
               onClick={() => setActiveTab('personal')}
-              className="inline-flex items-center gap-1 text-zinc-700 hover:text-zinc-950 font-semibold text-[11px] hover:underline"
+              className="inline-flex items-center gap-1 text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white font-semibold text-[11px] hover:underline"
             >
               <span>Abrir Mi Espacio</span>
               <ArrowRight className="w-3 h-3" />
-            </button>
+            </motion.button>
           </div>
 
           {displayedPersonal.map((goal) => (
@@ -199,31 +265,35 @@ export function TodayView() {
               key={goal.id}
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`p-3.5 rounded-xl border transition-all bg-white shadow-xs flex items-center justify-between gap-3 ${
-                goal.isDone ? 'border-zinc-200/60 bg-zinc-50/50 opacity-75' : 'border-zinc-200'
+              whileTap={{ scale: 0.99 }}
+              className={`p-3.5 rounded-xl border transition-all bg-white dark:bg-[#121215] shadow-xs flex items-center justify-between gap-3 ${
+                goal.isDone
+                  ? 'border-zinc-200/60 dark:border-white/5 bg-zinc-50/50 dark:bg-zinc-900/40 opacity-75'
+                  : 'border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20'
               }`}
             >
               <div className="flex items-center gap-3 min-w-0">
-                <button
+                <motion.button
                   type="button"
+                  whileTap={{ scale: 0.88 }}
                   onClick={() => toggleGoal(goal.id)}
-                  className="shrink-0 text-zinc-400 hover:text-zinc-900 transition-colors"
+                  className="shrink-0 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                   aria-label={goal.isDone ? 'Marcar pendiente' : 'Marcar completado'}
                 >
                   {goal.isDone ? (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 fill-emerald-50" />
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 fill-emerald-50 dark:fill-emerald-950/40" />
                   ) : (
-                    <Circle className="w-5 h-5 text-zinc-300 hover:text-zinc-500" />
+                    <Circle className="w-5 h-5 text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 dark:hover:text-zinc-400" />
                   )}
-                </button>
+                </motion.button>
                 <div className="min-w-0">
                   <div className={`text-sm font-semibold tracking-tight truncate ${
-                    goal.isDone ? 'line-through text-zinc-400' : 'text-zinc-900'
+                    goal.isDone ? 'line-through text-zinc-400 dark:text-zinc-500' : 'text-zinc-900 dark:text-zinc-100'
                   }`}>
                     {goal.title}
                   </div>
                   {goal.description && (
-                    <p className="text-xs text-zinc-500 truncate mt-0.5">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
                       {goal.description}
                     </p>
                   )}
@@ -231,7 +301,7 @@ export function TodayView() {
               </div>
 
               <div className="shrink-0 flex items-center gap-1.5">
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-600 uppercase tracking-wider">
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
                   {goal.category === 'study' ? 'Universidad' : 'Dev'}
                 </span>
               </div>
@@ -239,22 +309,23 @@ export function TodayView() {
           ))}
 
           {displayedPersonal.length === 0 && (
-            <div className="text-center py-12 px-4 rounded-2xl border border-zinc-200/80 bg-zinc-50/40 shadow-xs">
-              <div className="w-9 h-9 rounded-full bg-zinc-100 text-zinc-700 flex items-center justify-center mx-auto mb-2.5">
+            <div className="text-center py-12 px-4 rounded-2xl border border-zinc-200/80 dark:border-white/10 bg-zinc-50/40 dark:bg-zinc-900/30 shadow-xs">
+              <div className="w-9 h-9 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-center mx-auto mb-2.5">
                 <Sparkles className="w-4 h-4" />
               </div>
-              <p className="text-sm font-semibold text-zinc-800">
+              <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
                 {filterToday === 'pending'
                   ? '¡Sin tareas pendientes! Todo el estudio al día.'
                   : 'No tienes metas registradas para hoy.'}
               </p>
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setActiveTab('personal')}
-                className="mt-3 text-xs font-semibold text-zinc-900 underline underline-offset-2"
+                className="mt-3 text-xs font-semibold text-zinc-900 dark:text-zinc-100 underline underline-offset-2"
               >
                 Administrar en Mi Espacio
-              </button>
+              </motion.button>
             </div>
           )}
         </div>

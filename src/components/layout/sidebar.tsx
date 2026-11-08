@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { spring } from '@animate-ui/react/utils/motion';
+import { NexoLogo } from '@/components/brand/nexo-logo';
 
 export function Sidebar() {
   const { 
@@ -94,14 +95,21 @@ export function Sidebar() {
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-white dark:bg-[#09090b] select-none">
       {/* Brand Header */}
-      <div className="p-6 border-b border-zinc-100 dark:border-white/10 flex items-center justify-between">
+      <div className="p-5 border-b border-zinc-100 dark:border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 flex items-center justify-center font-semibold text-sm tracking-tight shadow-sm">
-            O
+          <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-900 border border-zinc-200/60 dark:border-white/10 flex items-center justify-center shadow-xs shrink-0">
+            <NexoLogo size="sm" />
           </div>
           <div>
-            <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">Organizer</h1>
-            <p className="text-xs text-zinc-400 dark:text-zinc-500 font-medium">Gestión Profesional & Personal</p>
+            <div className="flex items-center gap-1.5">
+              <h1 className="text-sm font-bold font-mono tracking-wider text-zinc-950 dark:text-white uppercase">
+                NEXO
+              </h1>
+              <span className="text-[9px] font-mono tracking-wider px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-semibold border border-zinc-200/60 dark:border-white/5">
+                OS
+              </span>
+            </div>
+            <p className="text-[11px] text-zinc-400 dark:text-zinc-500 font-medium">Workspace Operating System</p>
           </div>
         </div>
 

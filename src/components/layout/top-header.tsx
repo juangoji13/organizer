@@ -3,13 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import { useWorkspace } from '@/context/workspace-context';
 import { Plus } from 'lucide-react';
+import { NexoLogo } from '@/components/brand/nexo-logo';
 
 interface TopHeaderProps {
   onOpenCreateModal?: () => void;
 }
 
 export function TopHeader({ onOpenCreateModal }: TopHeaderProps) {
-  const { activeTab } = useWorkspace();
+  const { activeTab, setIsSidebarOpen } = useWorkspace();
   const [dateString, setDateString] = useState<string>('');
 
   useEffect(() => {
@@ -40,21 +41,35 @@ export function TopHeader({ onOpenCreateModal }: TopHeaderProps) {
       case 'settings':
         return 'Configuración';
       default:
-        return 'Organizer';
+        return 'NEXO';
     }
   };
 
   return (
     <header className="sticky top-0 z-30 bg-white/88 dark:bg-[#09090b]/90 backdrop-blur-md border-b border-zinc-200/80 dark:border-white/10 pt-safe px-4 sm:px-8 py-2.5 sm:py-3 select-none">
       <div className="flex items-center justify-between gap-3 max-w-7xl mx-auto">
-        {/* Left: View Title and Subtle Date */}
-        <div className="min-w-0">
-          <div className="flex items-baseline gap-2">
-            <span className="text-base sm:text-lg font-bold text-zinc-950 dark:text-zinc-50 tracking-tight truncate">
+        {/* Left: NEXO Brand Identity + View Title */}
+        <div className="flex items-center gap-2.5 min-w-0">
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen(true)}
+            className="flex items-center gap-2 shrink-0 md:cursor-default group text-left"
+            title="NEXO Workspace OS"
+          >
+            <div className="p-0.5 rounded-md transition-transform group-hover:scale-105 md:group-hover:scale-100">
+              <NexoLogo size="sm" />
+            </div>
+            <span className="font-mono text-xs sm:text-sm font-bold tracking-wider text-zinc-950 dark:text-white uppercase">
+              NEXO
+            </span>
+          </button>
+          <span className="text-zinc-300 dark:text-zinc-700 font-light select-none">/</span>
+          <div className="flex items-baseline gap-2 min-w-0">
+            <span className="text-sm sm:text-base font-semibold text-zinc-950 dark:text-zinc-50 tracking-tight truncate">
               {getTabTitle()}
             </span>
             {dateString && (
-              <span className="text-[11px] text-zinc-400 dark:text-zinc-500 font-medium capitalize">
+              <span className="hidden sm:inline-block text-[11px] text-zinc-400 dark:text-zinc-500 font-medium capitalize">
                 {dateString}
               </span>
             )}

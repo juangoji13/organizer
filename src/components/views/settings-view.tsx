@@ -2,10 +2,11 @@
 
 import React from 'react';
 import { useWorkspace } from '@/context/workspace-context';
-import { Briefcase, UserCheck, Database, Sun, Moon } from 'lucide-react';
+import { Briefcase, UserCheck, Database, Sun, Moon, Sparkles } from 'lucide-react';
+import { NexoLogo } from '@/components/brand/nexo-logo';
 
 export function SettingsView() {
-  const { mode, setMode, setActiveTab, theme, setTheme } = useWorkspace();
+  const { mode, setMode, setActiveTab, theme, setTheme, triggerSplash } = useWorkspace();
 
   const isSupabaseConfigured = Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL && 
@@ -125,6 +126,33 @@ export function SettingsView() {
               </p>
             </button>
           </div>
+        </div>
+
+        {/* Kinetic Brand Identity & Entrance Animation Card */}
+        <div className="p-6 rounded-xl border border-zinc-200/90 dark:border-white/10 bg-white dark:bg-[#121215] shadow-xs">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <NexoLogo size="sm" />
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Cinemática de Marca NEXO
+              </h2>
+            </div>
+            <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 font-semibold border border-sky-200/50 dark:border-sky-800/40">
+              Kinetic OS
+            </span>
+          </div>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4">
+            Experimenta el trazado dinámico orbital de lemniscata y la secuencia de entrada cinemática del sistema operativo.
+          </p>
+
+          <button
+            type="button"
+            onClick={triggerSplash}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white font-medium text-xs transition-all shadow-xs hover:scale-[1.01] active:scale-[0.98] cursor-pointer"
+          >
+            <span>✨</span>
+            <span>Reproducir Animación de Entrada</span>
+          </button>
         </div>
 
         {/* Workspace Switcher Section */}

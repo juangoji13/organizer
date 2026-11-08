@@ -13,6 +13,7 @@ import { PersonalView } from '@/components/views/personal-view';
 import { SettingsView } from '@/components/views/settings-view';
 import { UniversalCreateModal } from '@/components/common/universal-create-modal';
 import { ToastContainer } from '@/components/common/toast-container';
+import { SplashScreen } from '@/components/brand/splash-screen';
 
 function MainContent() {
   const { activeTab } = useWorkspace();
@@ -65,13 +66,22 @@ function MainContent() {
   );
 }
 
+function AppShellContent() {
+  const { isSplashActive, onSplashFinish } = useWorkspace();
+
+  return (
+    <div className="flex min-h-screen bg-white dark:bg-[#09090b] max-sm:dark:bg-black">
+      <SplashScreen forceShow={isSplashActive} onFinish={onSplashFinish} />
+      <Sidebar />
+      <MainContent />
+    </div>
+  );
+}
+
 export function AppShell() {
   return (
     <WorkspaceProvider>
-      <div className="flex min-h-screen bg-white dark:bg-[#09090b] max-sm:dark:bg-black">
-        <Sidebar />
-        <MainContent />
-      </div>
+      <AppShellContent />
     </WorkspaceProvider>
   );
 }

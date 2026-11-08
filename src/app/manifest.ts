@@ -2,9 +2,9 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Organizer - Personal & Client Work Manager',
-    short_name: 'Organizer',
-    description: 'Gestor y organizador de proyectos, clientes y trabajos personales',
+    name: 'NEXO - Workspace Operating System',
+    short_name: 'NEXO',
+    description: 'Sistema operativo integral de productividad, clientes y espacio personal',
     start_url: '/',
     display: 'standalone',
     background_color: '#09090b',

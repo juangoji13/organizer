@@ -38,6 +38,9 @@ interface WorkspaceContextType {
   toasts: ToastNotification[];
   showToast: (toast: Omit<ToastNotification, 'id'>) => string;
   dismissToast: (id: string) => void;
+  isSplashActive: boolean;
+  triggerSplash: () => void;
+  onSplashFinish: () => void;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextType | undefined>(undefined);
@@ -264,6 +267,15 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
   const [todayDateStr, setTodayDateStr] = useState<string>('2026-11-08');
+  const [isSplashActive, setIsSplashActive] = useState(false);
+
+  const triggerSplash = useCallback(() => {
+    setIsSplashActive(true);
+  }, []);
+
+  const onSplashFinish = useCallback(() => {
+    setIsSplashActive(false);
+  }, []);
 
   // Load saved theme on mount or check system preference
   useEffect(() => {
@@ -1091,6 +1103,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         toasts,
         showToast,
         dismissToast,
+        isSplashActive,
+        triggerSplash,
+        onSplashFinish,
       }}
     >
       {children}

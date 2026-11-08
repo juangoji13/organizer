@@ -16,15 +16,15 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Organizer | Trabajos Personales y Clientes",
-    template: "%s | Organizer",
+    default: "NEXO | Workspace Operating System",
+    template: "%s | NEXO",
   },
-  description: "Organizador y gestor integral de trabajos personales y proyectos para clientes",
-  applicationName: "Organizer",
+  description: "Sistema operativo integral de productividad, gestión de clientes y proyectos personales",
+  applicationName: "NEXO",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Organizer",
+    title: "NEXO",
   },
   formatDetection: {
     telephone: false,
