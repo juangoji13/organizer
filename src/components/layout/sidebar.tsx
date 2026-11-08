@@ -18,6 +18,7 @@ import {
   UserCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { spring } from '@animate-ui/react/utils/motion';
 
 export function Sidebar() {
   const { mode, activeTab, setActiveTab, isSidebarOpen, setIsSidebarOpen } = useWorkspace();
@@ -66,13 +67,15 @@ export function Sidebar() {
         </div>
 
         {/* Mobile close button */}
-        <button
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          transition={spring.press}
           onClick={() => setIsSidebarOpen(false)}
           className="md:hidden p-1.5 rounded-md text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50"
           aria-label="Cerrar menú"
         >
           <X className="w-5 h-5" />
-        </button>
+        </motion.button>
       </div>
 
       {/* Active Space Indicator Badge */}
@@ -111,16 +114,23 @@ export function Sidebar() {
               onClick={() => handleSelectTab(item.id)}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors relative ${
                 isActive
-                  ? 'text-zinc-900 bg-zinc-100/80 font-semibold'
+                  ? 'text-zinc-900 font-semibold'
                   : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50'
               }`}
             >
-              <div className="flex items-center gap-3">
+              {isActive && (
+                <motion.div
+                  layoutId="sidebar-active-indicator"
+                  transition={spring.highlight}
+                  className="absolute inset-0 bg-zinc-100 rounded-lg -z-0"
+                />
+              )}
+              <div className="flex items-center gap-3 relative z-10">
                 <Icon className={`w-4 h-4 ${isActive ? 'text-zinc-900' : 'text-zinc-400'}`} />
                 <span>{item.label}</span>
               </div>
               {item.badge && (
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                <span className={`relative z-10 px-2 py-0.5 rounded-full text-[10px] font-medium ${
                   item.badge === 'Deudas'
                     ? 'bg-amber-50 text-amber-700 border border-amber-200/50'
                     : 'bg-zinc-200/60 text-zinc-700'
@@ -157,7 +167,7 @@ export function Sidebar() {
         <SidebarContent />
       </aside>
 
-      {/* Mobile Drawer (Motion Backdrop + Slide-in) */}
+      {/* Mobile Drawer (Animate UI Spring Slide) */}
       <AnimatePresence>
         {isSidebarOpen && (
           <>
@@ -165,7 +175,7 @@ export function Sidebar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.18 }}
+              transition={{ duration: 0.15 }}
               onClick={() => setIsSidebarOpen(false)}
               className="fixed inset-0 bg-black/20 backdrop-blur-xs z-40 md:hidden"
             />
@@ -173,7 +183,7 @@ export function Sidebar() {
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 280 }}
+              transition={spring.slide}
               className="fixed top-0 left-0 bottom-0 w-72 max-w-[85vw] bg-white z-50 shadow-xl md:hidden border-r border-zinc-200"
             >
               <SidebarContent />

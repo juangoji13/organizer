@@ -10,10 +10,10 @@ import {
   ChevronDown, 
   ChevronUp, 
   Clock, 
-  CheckCircle2,
-  ExternalLink
+  CheckCircle2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { spring } from '@animate-ui/react/utils/motion';
 
 interface JobItemProps {
   job: ClientJob;
@@ -91,15 +91,17 @@ export function JobItem({ job }: JobItemProps) {
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            {/* Direct WhatsApp Button */}
-            <button
+            {/* Direct WhatsApp Button with Press Animation */}
+            <motion.button
+              whileTap={{ scale: 0.92 }}
+              transition={spring.press}
               onClick={openWhatsApp}
               className="p-1.5 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors border border-emerald-200/60"
               title={`Abrir WhatsApp con ${job.clientName}`}
               aria-label="Abrir WhatsApp"
             >
               <MessageCircle className="w-4 h-4" />
-            </button>
+            </motion.button>
 
             {/* Price Pill */}
             <div className="text-right">
@@ -149,7 +151,9 @@ export function JobItem({ job }: JobItemProps) {
           </div>
 
           <div className="flex items-center gap-1">
-            <button
+            <motion.button
+              whileTap={{ scale: 0.94 }}
+              transition={spring.press}
               onClick={() => copyToClipboard(`${job.platformUser} | ${job.platformPass}`, `creds-${job.id}`)}
               className="px-2 py-1 rounded text-[11px] font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200/60 transition-colors inline-flex items-center gap-1"
               title="Copiar credenciales"
@@ -165,7 +169,7 @@ export function JobItem({ job }: JobItemProps) {
                   <span>Copiar</span>
                 </>
               )}
-            </button>
+            </motion.button>
           </div>
         </div>
 
@@ -175,33 +179,37 @@ export function JobItem({ job }: JobItemProps) {
             <span className="font-medium">
               {completedCount} de {totalCount} entregables completados ({progressPercent}%)
             </span>
-            <button
+            <motion.button
+              whileTap={{ scale: 0.96 }}
+              transition={spring.press}
               onClick={() => setIsExpanded(!isExpanded)}
               className="inline-flex items-center gap-1 text-xs font-medium text-zinc-600 hover:text-zinc-900 transition-colors py-0.5"
             >
               <span>{isExpanded ? 'Ocultar lista' : 'Ver entregables'}</span>
               {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            </button>
+            </motion.button>
           </div>
 
           {/* Micro Progress Bar */}
           <div className="w-full h-1.5 bg-zinc-100 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-zinc-800 transition-all duration-300 rounded-full"
-              style={{ width: `${progressPercent}%` }}
+            <motion.div
+              className="h-full bg-zinc-800 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${progressPercent}%` }}
+              transition={spring.progress}
             />
           </div>
         </div>
       </motion.div>
 
-      {/* Expandable Deliverables Checklist with Motion */}
+      {/* Expandable Deliverables Checklist with Animate UI spring.height */}
       <AnimatePresence>
         {isExpanded && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+            transition={spring.height}
             className="border-t border-zinc-100 bg-zinc-50/70 px-4 sm:px-5 py-3 overflow-hidden"
           >
             <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">
