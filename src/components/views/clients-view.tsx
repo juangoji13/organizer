@@ -90,16 +90,11 @@ export function ClientsView() {
 
   return (
     <div className="max-w-4xl mx-auto py-3.5 sm:py-6 px-3 sm:px-6">
-      {/* Ultralight Clean Header */}
+      {/* Ultralight Clean Meta Bar (Without redundant H1) */}
       <div className="flex items-center justify-between gap-3 mb-3">
-        <div>
-          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900">
-            Clientes
-          </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            {clients.length} contactos registrados • {totalClientsWithDebt} con saldo pendiente
-          </p>
-        </div>
+        <p className="text-xs text-zinc-500">
+          {clients.length} contactos registrados • {totalClientsWithDebt} con saldo pendiente
+        </p>
 
         <div className="flex items-center gap-2">
           {/* Quick link to Finance & Cobros */}
@@ -199,10 +194,10 @@ export function ClientsView() {
                 onClick={() => setSelectedClientId(isExpanded ? null : client.id)}
                 className="px-3.5 sm:px-4 py-3 sm:py-3.5 flex items-center justify-between gap-3 hover:bg-zinc-50/70 transition-colors cursor-pointer select-none"
               >
-                {/* Left: Name, Phone & Work Summary */}
+                {/* Left: Line 1 = Name + Phone, Line 2 = Metrics */}
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-xs sm:text-sm font-semibold text-zinc-900 truncate">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-xs sm:text-sm font-semibold text-zinc-900 break-words">
                       {client.name}
                     </h3>
                     {client.phone && (
@@ -212,13 +207,13 @@ export function ClientsView() {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 mt-0.5">
+                  <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 mt-1">
                     <span>
                       {client.clientJobs.length} {client.clientJobs.length === 1 ? 'encargo' : 'encargos'}
                     </span>
                     <span>•</span>
                     <span>
-                      Generado:{' '}
+                      Total:{' '}
                       <strong className="text-zinc-800 font-mono font-semibold">
                         ${client.totalGenerado.toLocaleString()} COP
                       </strong>
@@ -226,31 +221,23 @@ export function ClientsView() {
                   </div>
                 </div>
 
-                {/* Right: Debt badge, Direct Payment Button, WhatsApp & Chevron */}
+                {/* Right: Clean WhatsApp, Saldo & Chevron */}
                 <div className="flex items-center gap-2 shrink-0">
                   {/* Status / Debt Badge */}
                   {client.totalDeuda > 0 ? (
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] sm:text-[11px] font-bold text-amber-900 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60 font-mono tabular-nums">
-                        Debe ${client.totalDeuda.toLocaleString()}
-                      </span>
-
-                      {/* Direct Partial Payment Button */}
-                      {client.firstJobWithDebt && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedJobForPayment(client.firstJobWithDebt);
-                          }}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] sm:text-[11px] font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/60 transition-colors cursor-pointer"
-                          title="Registrar abono directo"
-                        >
-                          <CreditCard className="w-3 h-3 text-emerald-700" />
-                          <span className="hidden sm:inline">Abonar</span>
-                        </button>
-                      )}
-                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (client.firstJobWithDebt) {
+                          setSelectedJobForPayment(client.firstJobWithDebt);
+                        }
+                      }}
+                      className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-amber-900 bg-amber-50 hover:bg-amber-100 px-2 py-1 rounded-md border border-amber-200/60 font-mono tabular-nums transition-colors cursor-pointer"
+                      title="Registrar abono"
+                    >
+                      <span>Debe ${client.totalDeuda.toLocaleString()}</span>
+                    </button>
                   ) : (
                     <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/40">
                       Al día

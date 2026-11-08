@@ -5,7 +5,7 @@ import { useWorkspace } from '@/context/workspace-context';
 import { ClientJob } from '@/types/organizer';
 import { EditJobModal } from '@/components/jobs/edit-job-modal';
 import { PartialPaymentModal } from '@/components/jobs/partial-payment-modal';
-import { Search, X, ChevronRight, Clock, Pencil, CreditCard, CheckCircle2 } from 'lucide-react';
+import { Search, X, ChevronRight, Clock, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 type FilterType = 'all' | 'in_progress' | 'delivered' | 'debt';
@@ -159,16 +159,11 @@ export function JobsView() {
 
   return (
     <div className="max-w-4xl mx-auto py-3.5 sm:py-6 px-3 sm:px-6">
-      {/* Ultralight Clean Header */}
-      <div className="flex items-baseline justify-between gap-2 mb-3">
-        <div>
-          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900">
-            Trabajos
-          </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            {jobs.length} encargos registrados • {totalDebtCount} con saldo pendiente
-          </p>
-        </div>
+      {/* Ultralight Clean Meta Bar (Without redundant H1) */}
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <p className="text-xs text-zinc-500">
+          {jobs.length} encargos registrados • {totalDebtCount} con saldo pendiente
+        </p>
       </div>
 
       {/* Ultralight Search and Quick Filter Pills */}
@@ -224,7 +219,7 @@ export function JobsView() {
         </div>
       </div>
 
-      {/* Chronologically Grouped Compact List */}
+      {/* Chronologically Grouped List */}
       <div className="space-y-4">
         {groupedJobs.map((group) => (
           <div key={group.id} className="space-y-1.5">
@@ -239,8 +234,8 @@ export function JobsView() {
               <div className="flex-1 h-px bg-zinc-200/60" />
             </div>
 
-            {/* Compact Rows (~60px to 70px each, fits 5-6 on mobile screens) */}
-            <div className="space-y-1.5">
+            {/* Well-spaced Cards without aggressive truncation */}
+            <div className="space-y-2">
               {group.jobs.map((job) => {
                 const jobDebt = Math.max(0, job.totalPrice - job.paidAmount);
                 const isDelivered = job.status === 'delivered';
@@ -254,58 +249,60 @@ export function JobsView() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.15 }}
                     onClick={() => setSelectedJobForEdit(job)}
-                    className="group relative flex items-center justify-between gap-2.5 sm:gap-4 px-3 py-2 sm:py-2.5 rounded-xl bg-white border border-zinc-200/75 hover:border-zinc-300 hover:shadow-xs transition-all cursor-pointer min-h-[58px] sm:min-h-[62px] active:scale-[0.995]"
+                    className="group relative flex flex-col justify-between p-3 sm:p-3.5 rounded-xl bg-white border border-zinc-200/75 hover:border-zinc-300 hover:shadow-xs transition-all cursor-pointer active:scale-[0.995]"
                   >
-                    {/* Left: Platform pill + Subject + Title + Client */}
-                    <div className="min-w-0 flex-1 flex flex-col justify-center">
-                      {/* Top Line: Platform Pill + Subject */}
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="shrink-0 text-[10px] font-semibold text-zinc-600 bg-zinc-100 px-1.5 py-0.5 rounded tracking-tight truncate max-w-[90px] sm:max-w-[130px]">
-                          {job.platform || 'General'}
-                        </span>
-                        <span className="text-[11px] font-medium text-zinc-500 truncate">
+                    {/* Fila superior: [Materia en pastilla sutil] + [Entregado] y a la derecha Límite */}
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+                        <span className="text-[11px] font-semibold text-zinc-700 bg-zinc-100/90 px-2 py-0.5 rounded-md tracking-tight">
                           {job.subject}
                         </span>
+                        {job.platform && (
+                          <span className="text-[10px] font-mono font-medium text-zinc-400 bg-zinc-50 px-1.5 py-0.5 rounded border border-zinc-200/50">
+                            {job.platform}
+                          </span>
+                        )}
                         {isDelivered && (
-                          <span className="shrink-0 inline-flex items-center gap-0.5 text-[9px] font-semibold text-emerald-800 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200/60">
+                          <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/60">
                             <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
                             Entregado
                           </span>
                         )}
                       </div>
 
-                      {/* Bottom Line: Job Title + Client Name */}
-                      <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
-                        <h3 className="text-xs sm:text-[13px] font-semibold text-zinc-900 truncate">
-                          {job.title}
-                        </h3>
-                        <span className="text-zinc-300 text-xs shrink-0">•</span>
-                        <span className="text-[11px] text-zinc-500 truncate shrink-0 max-w-[110px] sm:max-w-none">
+                      {/* Right: Badge de fecha limpio */}
+                      <span
+                        className={`text-[11px] font-mono font-medium px-2 py-0.5 rounded-md border flex items-center gap-1 shrink-0 ${
+                          deadline.isUrgent
+                            ? 'bg-amber-50/90 text-amber-900 border-amber-200/70 font-semibold'
+                            : 'bg-zinc-50 text-zinc-600 border-zinc-200/60'
+                        }`}
+                      >
+                        <Clock className="w-3 h-3 text-zinc-400 shrink-0" />
+                        <span>{deadline.label}</span>
+                      </span>
+                    </div>
+
+                    {/* Fila central: Título del trabajo (claro, completo, en negrita legible) */}
+                    <div className="my-1">
+                      <h3 className="text-sm font-semibold text-zinc-900 leading-snug break-words">
+                        {job.title}
+                      </h3>
+                    </div>
+
+                    {/* Fila inferior: Nombre del cliente a la izquierda, y a la derecha $Total + badge de Saldo */}
+                    <div className="flex items-center justify-between gap-2 pt-2 mt-1 border-t border-zinc-100">
+                      {/* Left: Nombre del cliente */}
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="text-xs font-medium text-zinc-600 truncate">
                           {job.clientName}
                         </span>
                       </div>
-                    </div>
 
-                    {/* Right: Deadline Badge + Payment Status + Action Arrow */}
-                    <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                      {/* Deadline Badge */}
-                      <div className="text-right flex items-center">
-                        <span
-                          className={`text-[10px] sm:text-[11px] font-mono font-medium px-2 py-0.5 rounded-md border flex items-center gap-1 ${
-                            deadline.isUrgent
-                              ? 'bg-amber-50/80 text-amber-900 border-amber-200/60'
-                              : 'bg-zinc-50 text-zinc-600 border-zinc-200/60'
-                          }`}
-                        >
-                          <Clock className="w-3 h-3 text-zinc-400 shrink-0" />
-                          <span>{deadline.label}</span>
-                        </span>
-                      </div>
-
-                      {/* Payment Status ($Total and Debt) */}
-                      <div className="flex flex-col items-end text-right min-w-[74px] sm:min-w-[85px]">
+                      {/* Right: Precio + Saldo + Flecha */}
+                      <div className="flex items-center gap-2 shrink-0">
                         <span className="text-xs font-bold text-zinc-900 font-mono tabular-nums">
-                          ${job.totalPrice.toLocaleString()}
+                          ${job.totalPrice.toLocaleString()} {job.currency || 'COP'}
                         </span>
 
                         {jobDebt > 0 ? (
@@ -315,21 +312,20 @@ export function JobsView() {
                               e.stopPropagation();
                               setSelectedJobForPayment(job);
                             }}
-                            className="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 px-1.5 py-0.2 rounded border border-amber-200/60 font-mono tabular-nums transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200/60 font-mono tabular-nums transition-colors cursor-pointer"
                             title="Registrar abono directo"
                           >
                             <span>Debe ${jobDebt.toLocaleString()}</span>
                           </button>
                         ) : (
-                          <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200/40">
+                          <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/40">
                             Al día
                           </span>
                         )}
-                      </div>
 
-                      {/* Subtle Arrow to open Edit/Detail */}
-                      <div className="flex items-center text-zinc-400 group-hover:text-zinc-700 group-hover:translate-x-0.5 transition-all pl-0.5">
-                        <ChevronRight className="w-4 h-4" />
+                        <div className="flex items-center text-zinc-400 group-hover:text-zinc-700 group-hover:translate-x-0.5 transition-all">
+                          <ChevronRight className="w-4 h-4" />
+                        </div>
                       </div>
                     </div>
                   </motion.div>

@@ -6,7 +6,6 @@ import {
   GraduationCap, 
   Sparkles, 
   PiggyBank, 
-  Plus, 
   CheckCircle2, 
   Circle, 
   FileText, 
@@ -367,29 +366,9 @@ export function PersonalView() {
 
   return (
     <div className="max-w-4xl mx-auto py-4 sm:py-6 px-3.5 sm:px-6">
-      {/* Top Header */}
+      {/* Segmented Control de 2 pestañas principales (sin redundancia de cabecera) */}
       <div className="mb-5 sm:mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <div className="text-[11px] font-semibold tracking-wider uppercase text-zinc-500">
-              Mi Espacio
-            </div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-950 mt-0.5">
-              Universidad, Proyectos & Notas
-            </h1>
-          </div>
-
-          <button
-            onClick={() => handleOpenCreate('personal')}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 text-xs font-semibold transition-colors self-start sm:self-auto shadow-xs min-h-[38px]"
-          >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Nuevo Registro</span>
-          </button>
-        </div>
-
-        {/* Segmented Control de 2 pestañas principales */}
-        <div className="mt-5 p-1 bg-zinc-100/90 border border-zinc-200/70 rounded-xl grid grid-cols-2 max-w-md select-none">
+        <div className="p-1 bg-zinc-100/90 border border-zinc-200/70 rounded-xl grid grid-cols-2 max-w-md select-none">
           <button
             type="button"
             onClick={() => setActiveMainTab('study_notes')}

@@ -103,14 +103,14 @@ export function JobItem({ job }: JobItemProps) {
           }}
           className="relative bg-white z-10 p-3.5 sm:p-4"
         >
-          {/* Header: Materia + Precio, Deuda y Acciones */}
+          {/* Header: Materia (espaciosa, sin truncamiento) + Entregado + Límite + Editar */}
           <div className="flex items-center justify-between gap-2 mb-1.5">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 truncate">
+            <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+              <span className="text-xs font-semibold text-zinc-800 bg-zinc-100/90 px-2 py-0.5 rounded-md tracking-tight">
                 {job.subject}
               </span>
               {isDelivered && (
-                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium text-emerald-800 bg-emerald-50/70 border border-emerald-200/40 shrink-0">
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200/50 shrink-0">
                   <Check className="w-2.5 h-2.5 text-emerald-700" />
                   Entregado
                 </span>
@@ -118,28 +118,10 @@ export function JobItem({ job }: JobItemProps) {
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0">
-              <span className="text-xs font-semibold text-zinc-900 font-mono tabular-nums">
-                ${job.totalPrice.toLocaleString()} {job.currency}
-              </span>
-
-              {!isFullyPaid ? (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsPaymentModalOpen(true);
-                  }}
-                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono tabular-nums text-amber-900 bg-amber-50/60 hover:bg-amber-100/70 border border-amber-200/40 transition-colors cursor-pointer"
-                  title="Registrar abono parcial"
-                >
-                  <span>Debe ${pendingDebt.toLocaleString()}</span>
-                  <span className="font-sans text-[9px] underline text-amber-950 font-medium">abonar</span>
-                </button>
-              ) : (
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium text-emerald-800 bg-emerald-50/50 border border-emerald-200/30">
-                  Pagado
-                </span>
-              )}
+              <div className="flex items-center gap-1 text-zinc-500 text-[11px] font-mono bg-zinc-50 px-2 py-0.5 rounded-md border border-zinc-200/60">
+                <Clock className="w-3 h-3 text-zinc-400 shrink-0" />
+                <span>Límite: <strong className="text-zinc-700 font-semibold">{job.deadlineTime}</strong></span>
+              </div>
 
               {/* Edit Button */}
               <button
@@ -158,25 +140,44 @@ export function JobItem({ job }: JobItemProps) {
           </div>
 
           {/* Título de la tarea */}
-          <h3 className="text-sm font-semibold text-zinc-900 tracking-tight leading-snug mb-1.5">
+          <h3 className="text-sm font-semibold text-zinc-900 tracking-tight leading-snug my-1.5 break-words">
             {job.title}
           </h3>
 
-          {/* Cliente con WhatsApp integrado orgánicamente + Hora Límite */}
-          <div className="flex items-center justify-between gap-2 text-xs mb-2.5">
+          {/* Cliente con WhatsApp integrado a la izquierda + Precio y Saldo a la derecha */}
+          <div className="flex items-center justify-between gap-2 text-xs mb-2.5 pt-1.5 border-t border-zinc-100">
             <button
               type="button"
               onClick={openWhatsApp}
               className="group inline-flex items-center gap-1.5 text-zinc-700 hover:text-emerald-700 transition-colors min-w-0 -ml-1 px-1 py-0.5 rounded-md hover:bg-emerald-50/60 text-left"
               title={`Contactar a ${job.clientName} por WhatsApp`}
             >
-              <span className="text-[13px] font-medium truncate">{job.clientName}</span>
+              <span className="text-xs sm:text-[13px] font-medium text-zinc-800 truncate">{job.clientName}</span>
               <MessageCircle className="w-3.5 h-3.5 text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
             </button>
 
-            <div className="flex items-center gap-1 text-zinc-500 text-[11px] shrink-0">
-              <Clock className="w-3.5 h-3.5 text-zinc-400" />
-              <span>Límite: <strong className="text-zinc-700 font-medium font-mono tabular-nums">{job.deadlineTime}</strong></span>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="text-xs font-bold text-zinc-900 font-mono tabular-nums">
+                ${job.totalPrice.toLocaleString()} {job.currency}
+              </span>
+
+              {!isFullyPaid ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsPaymentModalOpen(true);
+                  }}
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono tabular-nums font-bold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200/60 transition-colors cursor-pointer"
+                  title="Registrar abono parcial"
+                >
+                  <span>Debe ${pendingDebt.toLocaleString()}</span>
+                </button>
+              ) : (
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200/40">
+                  Pagado
+                </span>
+              )}
             </div>
           </div>
 
