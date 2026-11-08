@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useWorkspace } from '@/context/workspace-context';
 import { Briefcase, UserCheck, Plus } from 'lucide-react';
-import { motion } from 'motion/react';
 
 interface TopHeaderProps {
   onOpenCreateModal?: () => void;
@@ -54,30 +53,30 @@ export function TopHeader({ onOpenCreateModal }: TopHeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-white/92 backdrop-blur-xl border-b border-zinc-200/80 pt-safe px-4 sm:px-8 py-2.5 sm:py-3 select-none">
+    <header className="sticky top-0 z-30 bg-white/88 backdrop-blur-md border-b border-zinc-200/80 pt-safe px-4 sm:px-8 py-2.5 sm:py-3 select-none">
       <div className="flex items-center justify-between gap-3 max-w-7xl mx-auto">
-        {/* Left: Clean View Title and Date (No redundant hamburger) */}
+        {/* Left: View Title and Date */}
         <div className="min-w-0">
           <div className="flex items-baseline gap-2">
-            <h1 className="text-base sm:text-lg font-bold text-zinc-950 tracking-tight truncate">
+            <span className="text-base sm:text-lg font-bold text-zinc-950 tracking-tight truncate">
               {getTabTitle()}
-            </h1>
-            <span className="text-[11px] text-zinc-400 capitalize hidden sm:inline">
+            </span>
+            <span className="text-[11px] text-zinc-500 capitalize hidden sm:inline">
               {dateString}
             </span>
           </div>
         </div>
 
-        {/* Right: Quick Action (+) + Fast Workspace Switcher (Clientes ⇄ Personal) */}
+        {/* Right: Quick Action (+) for Desktop + Fast Workspace Switcher (Clientes ⇄ Personal) */}
         <div className="flex items-center gap-2">
           {onOpenCreateModal && (
             <button
               onClick={onOpenCreateModal}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 text-white hover:bg-zinc-800 text-xs font-semibold transition-colors shadow-xs"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 text-white hover:bg-zinc-800 text-xs font-semibold transition-colors shadow-xs"
               title="Crear nuevo registro"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">
+              <span>
                 {mode === 'clients' ? 'Nuevo Trabajo' : 'Nueva Meta'}
               </span>
             </button>
@@ -86,18 +85,19 @@ export function TopHeader({ onOpenCreateModal }: TopHeaderProps) {
           {/* Clean Workspace Toggle (Clientes vs Personal) */}
           <button
             onClick={toggleWorkspaceMode}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-zinc-200/80 bg-zinc-50 hover:bg-zinc-100 text-zinc-700 text-xs font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-zinc-200/80 bg-zinc-50 hover:bg-zinc-100 text-zinc-800 text-xs font-medium transition-colors min-h-[34px]"
             title="Cambiar enfoque"
+            aria-label={`Cambiar a modo ${mode === 'clients' ? 'Personal' : 'Clientes'}`}
           >
             {mode === 'clients' ? (
               <>
                 <Briefcase className="w-3.5 h-3.5 text-zinc-600" />
-                <span className="text-[11px] font-semibold">Clientes</span>
+                <span className="text-[11px] font-semibold text-zinc-800">Clientes</span>
               </>
             ) : (
               <>
                 <UserCheck className="w-3.5 h-3.5 text-zinc-700" />
-                <span className="text-[11px] font-semibold">Personal</span>
+                <span className="text-[11px] font-semibold text-zinc-800">Personal</span>
               </>
             )}
           </button>

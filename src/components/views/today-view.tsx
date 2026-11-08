@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useWorkspace } from '@/context/workspace-context';
 import { JobItem } from '@/components/jobs/job-item';
-import { CheckCircle2, Clock, DollarSign, Sparkles } from 'lucide-react';
+import { CheckCircle2, Clock, DollarSign } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export function TodayView() {
@@ -28,7 +28,7 @@ export function TodayView() {
       <div className="mb-4 sm:mb-6">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="text-[11px] font-semibold tracking-wider uppercase text-zinc-400 font-mono">
+            <div className="text-[11px] font-semibold tracking-wider uppercase text-zinc-500">
               Agenda Prioritaria
             </div>
             <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-zinc-900 mt-0.5">
@@ -43,7 +43,7 @@ export function TodayView() {
               className={`px-2.5 py-1 rounded-md transition-colors ${
                 filterToday === 'all'
                   ? 'bg-white text-zinc-900 shadow-xs font-semibold'
-                  : 'text-zinc-500 hover:text-zinc-800'
+                  : 'text-zinc-600 hover:text-zinc-900'
               }`}
             >
               Todos ({urgentJobs.length})
@@ -53,7 +53,7 @@ export function TodayView() {
               className={`px-2.5 py-1 rounded-md transition-colors ${
                 filterToday === 'pending'
                   ? 'bg-white text-zinc-900 shadow-xs font-semibold'
-                  : 'text-zinc-500 hover:text-zinc-800'
+                  : 'text-zinc-600 hover:text-zinc-900'
               }`}
             >
               Pendientes ({pendingUrgent.length})
@@ -64,44 +64,49 @@ export function TodayView() {
         {/* 3-Column Thumb KPI Strip */}
         <div className="grid grid-cols-3 gap-2 mt-3.5">
           {/* Card 1: Pending jobs */}
-          <div className="p-2.5 rounded-xl bg-white border border-zinc-200/80 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-            <div className="flex items-center gap-1 text-[10px] font-semibold text-zinc-400 uppercase tracking-tight">
+          <div className="p-2.5 sm:p-3 rounded-xl bg-white border border-zinc-200/80 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
               <Clock className="w-3 h-3 text-zinc-400" />
               <span>Por Entregar</span>
             </div>
-            <div className="text-base sm:text-lg font-bold text-zinc-900 mt-0.5 tracking-tight">
-              {pendingUrgent.length} <span className="text-[10px] font-normal text-zinc-400">trabajos</span>
+            <div className="text-base sm:text-lg font-bold text-zinc-900 mt-0.5 tracking-tight font-mono tabular-nums">
+              {pendingUrgent.length} <span className="text-[10px] font-normal text-zinc-500 font-sans">trabajos</span>
             </div>
           </div>
 
           {/* Card 2: Completed today */}
-          <div className="p-2.5 rounded-xl bg-white border border-zinc-200/80 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-            <div className="flex items-center gap-1 text-[10px] font-semibold text-zinc-400 uppercase tracking-tight">
+          <div className="p-2.5 sm:p-3 rounded-xl bg-white border border-zinc-200/80 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
               <CheckCircle2 className="w-3 h-3 text-emerald-600" />
               <span>Entregados</span>
             </div>
-            <div className="text-base sm:text-lg font-bold text-zinc-900 mt-0.5 tracking-tight">
+            <div className="text-base sm:text-lg font-bold text-zinc-900 mt-0.5 tracking-tight font-mono tabular-nums">
               {completedUrgent.length} / {urgentJobs.length}
             </div>
           </div>
 
           {/* Card 3: Pending money today */}
-          <div className="p-2.5 rounded-xl bg-white border border-zinc-200/80 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-            <div className="flex items-center gap-1 text-[10px] font-semibold text-zinc-400 uppercase tracking-tight">
+          <div className="p-2.5 sm:p-3 rounded-xl bg-white border border-zinc-200/80 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
               <DollarSign className="w-3 h-3 text-amber-600" />
               <span>Por Cobrar</span>
             </div>
-            <div className="text-base sm:text-lg font-bold text-amber-900 mt-0.5 tracking-tight">
-              ${(todayPendingDebt / 1000).toFixed(0)}k <span className="text-[9px] font-normal text-zinc-400">COP</span>
+            <div className="text-base sm:text-lg font-bold text-amber-900 mt-0.5 tracking-tight font-mono tabular-nums">
+              ${(todayPendingDebt / 1000).toFixed(0)}k <span className="text-[9px] font-normal text-zinc-500 font-sans">COP</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Discreet Mobile Swipe Tip */}
-      <div className="hidden sm:flex items-center justify-between text-[11px] text-zinc-400 mb-3 px-1">
-        <span>Desliza tarjeta a la derecha para entregar • a la izquierda para cobrar</span>
-        <span>Pulsa en el usuario o clave para copiar en 1 toque</span>
+      {/* Discreet Mobile Swipe Tip (Visible on mobile too!) */}
+      <div className="flex items-center justify-between text-[11px] text-zinc-500 mb-3 px-1">
+        <span className="flex items-center gap-1 flex-wrap">
+          <span>Deslizar:</span>
+          <span className="text-emerald-800 font-medium">derecha ➔ entregar</span>
+          <span>•</span>
+          <span className="text-amber-900 font-medium">izquierda ➔ cobrar</span>
+        </span>
+        <span className="hidden sm:inline text-zinc-400">1 toque para copiar credenciales</span>
       </div>
 
       {/* Urgent Jobs List */}
@@ -129,7 +134,7 @@ export function TodayView() {
               ? '¡Todo listo! No tienes tareas pendientes para hoy.'
               : 'No hay entregas programadas para hoy.'}
           </p>
-          <p className="text-xs text-zinc-400 mt-1 max-w-xs mx-auto">
+          <p className="text-xs text-zinc-500 mt-1 max-w-xs mx-auto">
             Puedes consultar "Trabajos" en la barra inferior para ver los siguientes días.
           </p>
         </div>

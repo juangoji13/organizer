@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { useWorkspace } from '@/context/workspace-context';
-import { DeliverableItem } from '@/types/organizer';
 import { 
   X, 
   Briefcase, 
@@ -12,7 +11,6 @@ import {
   FileText, 
   Plus, 
   Trash2, 
-  Sparkle,
   ArrowLeft
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -87,12 +85,6 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
     ]);
   };
 
-  const applyPresetTaller = () => {
-    setDeliverables([
-      { id: 'd-gen-1', title: title || 'Taller Completo', isCompleted: false, type: 'assignment' },
-    ]);
-  };
-
   const addManualDeliverable = () => {
     if (!newDeliverableTitle.trim()) return;
     setDeliverables((prev) => [
@@ -108,15 +100,15 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
     if (!clientName.trim() || !subject.trim()) return;
     setIsSubmitting(true);
 
-    const deliverablesToSave: DeliverableItem[] = deliverables.length > 0
-      ? deliverables
-      : [{ id: `d-${Date.now()}`, title: title || subject, isCompleted: false, type: 'assignment' }];
+    const deliverablesToSave = deliverables.length > 0 ? deliverables : [
+      { id: `d-single-${Date.now()}`, title: title.trim() || 'Trabajo Completo', isCompleted: false },
+    ];
 
     await createJob({
       clientName: clientName.trim(),
       clientPhone: clientPhone.trim() || '573000000000',
       subject: subject.trim(),
-      title: title.trim() || subject.trim(),
+      title: title.trim() || `${subject} Entrega`,
       deadlineTime: deadlineTime || '11:59 PM',
       deadlineDate: deadlineDate || '2026-11-08',
       isUrgentToday: true,
@@ -173,14 +165,29 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-xs select-none">
+    <div 
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/45 backdrop-blur-xs select-none"
+    >
       <motion.div
+        onClick={(e) => e.stopPropagation()}
+        drag="y"
+        dragConstraints={{ top: 0 }}
+        dragElastic={{ top: 0, bottom: 0.5 }}
+        onDragEnd={(_, info) => {
+          if (info.offset.y > 100 || info.velocity.y > 500) {
+            onClose();
+          }
+        }}
         initial={{ y: '100%', opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: '100%', opacity: 0 }}
         transition={{ type: 'spring', damping: 28, stiffness: 350 }}
-        className="w-full sm:max-w-lg max-h-[90vh] overflow-y-auto bg-white rounded-t-2xl sm:rounded-2xl border border-zinc-200/80 shadow-2xl p-4 sm:p-6"
+        className="w-full sm:max-w-lg max-h-[92vh] overflow-y-auto bg-white rounded-t-2xl sm:rounded-2xl border border-zinc-200/80 shadow-2xl p-4 sm:p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-6"
       >
+        {/* Mobile Drag Handle Indicator */}
+        <div className="w-10 h-1.5 rounded-full bg-zinc-300 mx-auto mb-2.5 sm:hidden cursor-grab active:cursor-grabbing" />
+
         {/* Top Header */}
         <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
           <div className="flex items-center gap-2">
@@ -188,14 +195,15 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
               <button
                 type="button"
                 onClick={() => setStep('select')}
-                className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100"
+                className="w-9 h-9 rounded-lg text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100 active:bg-zinc-200 flex items-center justify-center transition-colors"
                 title="Volver"
+                aria-label="Volver"
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
             )}
             <div>
-              <span className="text-[10px] font-semibold tracking-wider uppercase text-zinc-400 font-mono">
+              <span className="text-[10px] font-semibold tracking-wider uppercase text-zinc-500">
                 {step === 'select' ? '¿Qué deseas crear?' : step === 'job' ? 'Nuevo Trabajo de Cliente' : step === 'note' ? 'Nueva Nota Rápida' : 'Nueva Meta Personal'}
               </span>
               <h2 className="text-base sm:text-lg font-bold text-zinc-950">
@@ -206,18 +214,19 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100"
+            className="w-9 h-9 rounded-lg text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100 active:bg-zinc-200 flex items-center justify-center transition-colors"
+            aria-label="Cerrar modal"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* STEP 1: Choice Screen (No more guessing!) */}
+        {/* STEP 1: Choice Screen */}
         {step === 'select' && (
           <div className="py-4 space-y-2.5">
             <button
               onClick={() => setStep('job')}
-              className="w-full p-3.5 rounded-xl border border-zinc-200/90 hover:border-zinc-400 bg-white hover:bg-zinc-50/80 flex items-center gap-3 transition-colors text-left"
+              className="w-full p-3.5 rounded-xl border border-zinc-200/90 hover:border-zinc-400 bg-white hover:bg-zinc-50/80 active:bg-zinc-100 flex items-center gap-3 transition-colors text-left min-h-[56px]"
             >
               <div className="w-10 h-10 rounded-lg bg-zinc-900 text-white flex items-center justify-center shrink-0">
                 <Briefcase className="w-5 h-5" />
@@ -237,7 +246,7 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
                 setPersonalCategory('study');
                 setStep('personal');
               }}
-              className="w-full p-3.5 rounded-xl border border-zinc-200/90 hover:border-zinc-400 bg-white hover:bg-zinc-50/80 flex items-center gap-3 transition-colors text-left"
+              className="w-full p-3.5 rounded-xl border border-zinc-200/90 hover:border-zinc-400 bg-white hover:bg-zinc-50/80 active:bg-zinc-100 flex items-center gap-3 transition-colors text-left min-h-[56px]"
             >
               <div className="w-10 h-10 rounded-lg bg-zinc-100 text-zinc-800 flex items-center justify-center shrink-0">
                 <GraduationCap className="w-5 h-5" />
@@ -257,7 +266,7 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
                 setPersonalCategory('dev');
                 setStep('personal');
               }}
-              className="w-full p-3.5 rounded-xl border border-zinc-200/90 hover:border-zinc-400 bg-white hover:bg-zinc-50/80 flex items-center gap-3 transition-colors text-left"
+              className="w-full p-3.5 rounded-xl border border-zinc-200/90 hover:border-zinc-400 bg-white hover:bg-zinc-50/80 active:bg-zinc-100 flex items-center gap-3 transition-colors text-left min-h-[56px]"
             >
               <div className="w-10 h-10 rounded-lg bg-zinc-100 text-zinc-800 flex items-center justify-center shrink-0">
                 <Sparkles className="w-5 h-5" />
@@ -277,7 +286,7 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
                 setPersonalCategory('savings');
                 setStep('personal');
               }}
-              className="w-full p-3.5 rounded-xl border border-zinc-200/90 hover:border-zinc-400 bg-white hover:bg-zinc-50/80 flex items-center gap-3 transition-colors text-left"
+              className="w-full p-3.5 rounded-xl border border-zinc-200/90 hover:border-zinc-400 bg-white hover:bg-zinc-50/80 active:bg-zinc-100 flex items-center gap-3 transition-colors text-left min-h-[56px]"
             >
               <div className="w-10 h-10 rounded-lg bg-zinc-100 text-zinc-800 flex items-center justify-center shrink-0">
                 <PiggyBank className="w-5 h-5" />
@@ -294,7 +303,7 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
 
             <button
               onClick={() => setStep('note')}
-              className="w-full p-3.5 rounded-xl border border-zinc-200/90 hover:border-zinc-400 bg-white hover:bg-zinc-50/80 flex items-center gap-3 transition-colors text-left"
+              className="w-full p-3.5 rounded-xl border border-zinc-200/90 hover:border-zinc-400 bg-white hover:bg-zinc-50/80 active:bg-zinc-100 flex items-center gap-3 transition-colors text-left min-h-[56px]"
             >
               <div className="w-10 h-10 rounded-lg bg-zinc-100 text-zinc-800 flex items-center justify-center shrink-0">
                 <FileText className="w-5 h-5" />
@@ -325,14 +334,14 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
                   required
-                  className="flex-1 px-3 py-2 rounded-lg border border-zinc-200/80 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-900"
+                  className="flex-1 px-3 py-2.5 rounded-lg border border-zinc-200/80 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-900 text-xs sm:text-sm"
                 />
                 <input
                   type="tel"
                   placeholder="WhatsApp"
                   value={clientPhone}
                   onChange={(e) => setClientPhone(e.target.value)}
-                  className="w-32 px-3 py-2 rounded-lg border border-zinc-200/80 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-900"
+                  className="w-32 px-3 py-2.5 rounded-lg border border-zinc-200/80 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-900 text-xs sm:text-sm font-mono"
                 />
               </div>
             </div>
@@ -346,7 +355,7 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   required
-                  className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200/80 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-900"
+                  className="w-full px-3 py-2 rounded-lg border border-zinc-200/80 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-900 text-xs sm:text-sm"
                 />
               </div>
               <div>
@@ -356,24 +365,24 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
                   placeholder="ej. Corte 2"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200/80 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-900"
+                  className="w-full px-3 py-2 rounded-lg border border-zinc-200/80 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-900 text-xs sm:text-sm"
                 />
               </div>
             </div>
 
             {/* Plataforma & Credenciales */}
-            <div className="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200/70 space-y-2">
+            <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-200/80 space-y-2">
               <label className="block font-semibold text-[10px] uppercase tracking-wider text-zinc-500">
                 Plataforma & Credenciales
               </label>
-              <div className="flex gap-1 overflow-x-auto pb-0.5">
+              <div className="flex gap-1.5 overflow-x-auto pb-1 select-none">
                 {['McGraw-Hill Connect', 'Moodle', 'Teams / Aula', 'Canvas', 'Classroom'].map((p) => (
                   <button
                     key={p}
                     type="button"
                     onClick={() => setPlatform(p)}
-                    className={`px-2 py-1 rounded text-[10px] font-medium shrink-0 ${
-                      platform === p ? 'bg-zinc-900 text-white font-semibold' : 'bg-white border border-zinc-200 text-zinc-600'
+                    className={`px-2.5 py-1.5 rounded-lg text-[11px] font-medium shrink-0 min-h-[32px] transition-colors ${
+                      platform === p ? 'bg-zinc-900 text-white font-semibold' : 'bg-white border border-zinc-200/80 text-zinc-600'
                     }`}
                   >
                     {p}
@@ -381,20 +390,20 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
                 ))}
               </div>
 
-              <div className="grid grid-cols-2 gap-1.5">
+              <div className="grid grid-cols-2 gap-2">
                 <input
                   type="text"
                   placeholder="Usuario"
                   value={platformUser}
                   onChange={(e) => setPlatformUser(e.target.value)}
-                  className="px-2 py-1.5 rounded bg-white border border-zinc-200 font-mono text-zinc-800 text-xs"
+                  className="px-3 py-2 rounded-lg bg-white border border-zinc-200/80 font-mono text-zinc-900 text-xs min-h-[40px]"
                 />
                 <input
                   type="text"
                   placeholder="Contraseña"
                   value={platformPass}
                   onChange={(e) => setPlatformPass(e.target.value)}
-                  className="px-2 py-1.5 rounded bg-white border border-zinc-200 font-mono text-zinc-800 text-xs"
+                  className="px-3 py-2 rounded-lg bg-white border border-zinc-200/80 font-mono text-zinc-900 text-xs min-h-[40px]"
                 />
               </div>
             </div>
@@ -408,7 +417,7 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
                   step="5000"
                   value={totalPrice}
                   onChange={(e) => setTotalPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                  className="w-full px-2 py-1.5 rounded-lg border border-zinc-200 bg-white font-semibold"
+                  className="w-full px-2.5 py-2 rounded-lg border border-zinc-200/80 bg-white font-bold font-mono text-zinc-900 min-h-[40px]"
                 />
               </div>
               <div>
@@ -418,7 +427,7 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
                   step="5000"
                   value={paidAmount}
                   onChange={(e) => setPaidAmount(e.target.value === '' ? '' : Number(e.target.value))}
-                  className="w-full px-2 py-1.5 rounded-lg border border-zinc-200 bg-white"
+                  className="w-full px-2.5 py-2 rounded-lg border border-zinc-200/80 bg-white font-bold font-mono text-zinc-900 min-h-[40px]"
                 />
               </div>
               <div>
@@ -427,29 +436,29 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
                   type="date"
                   value={deadlineDate}
                   onChange={(e) => setDeadlineDate(e.target.value)}
-                  className="w-full px-2 py-1.5 rounded-lg border border-zinc-200 bg-white"
+                  className="w-full px-2.5 py-2 rounded-lg border border-zinc-200/80 bg-white text-zinc-900 min-h-[40px]"
                 />
               </div>
             </div>
 
             {/* Presets Universitarios */}
             <div className="pt-2 border-t border-zinc-100">
-              <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center justify-between mb-2">
                 <span className="font-semibold text-zinc-800 text-xs">
                   Entregables ({deliverables.length})
                 </span>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5">
                   <button
                     type="button"
                     onClick={applyPresetConnect}
-                    className="px-2 py-0.5 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-[10px] font-semibold flex items-center gap-1"
+                    className="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-[11px] font-semibold flex items-center gap-1 min-h-[32px] transition-colors"
                   >
                     <span>Connect (17)</span>
                   </button>
                   <button
                     type="button"
                     onClick={applyPresetCorte}
-                    className="px-2 py-0.5 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-[10px]"
+                    className="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-[11px] font-semibold min-h-[32px] transition-colors"
                   >
                     Corte (3)
                   </button>
@@ -457,12 +466,17 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
               </div>
 
               {deliverables.length > 0 && (
-                <div className="max-h-28 overflow-y-auto space-y-1 mb-2 pr-1">
+                <div className="max-h-32 overflow-y-auto space-y-1 mb-2 pr-1">
                   {deliverables.map((d, i) => (
-                    <div key={d.id} className="flex items-center justify-between p-1 px-2 rounded bg-zinc-50 border text-[11px]">
+                    <div key={d.id} className="flex items-center justify-between p-1.5 px-2.5 rounded-lg bg-zinc-50 border border-zinc-200/80 text-xs">
                       <span className="truncate">{i + 1}. {d.title}</span>
-                      <button type="button" onClick={() => setDeliverables(deliverables.filter(x => x.id !== d.id))}>
-                        <Trash2 className="w-3 h-3 text-zinc-400 hover:text-red-600" />
+                      <button 
+                        type="button" 
+                        onClick={() => setDeliverables(deliverables.filter(x => x.id !== d.id))}
+                        className="p-1 rounded-md text-zinc-400 hover:text-red-600 min-w-[32px] min-h-[32px] flex items-center justify-center transition-colors"
+                        aria-label={`Eliminar entregable ${d.title}`}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   ))}
@@ -470,14 +484,18 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
               )}
             </div>
 
-            <div className="pt-2 flex justify-end gap-2">
-              <button type="button" onClick={onClose} className="px-3 py-1.5 text-zinc-600 hover:bg-zinc-100 rounded-lg">
+            <div className="pt-2 flex justify-end gap-2.5">
+              <button 
+                type="button" 
+                onClick={onClose} 
+                className="px-4 py-2 text-zinc-600 hover:bg-zinc-100 active:bg-zinc-200 rounded-lg text-xs font-medium min-h-[44px] transition-colors"
+              >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-1.5 rounded-lg bg-zinc-900 text-white font-semibold hover:bg-zinc-800 disabled:opacity-50"
+                className="px-5 py-2 rounded-lg bg-zinc-900 text-white font-semibold hover:bg-zinc-800 active:scale-[0.98] disabled:opacity-50 text-xs min-h-[44px] shadow-sm transition-all"
               >
                 {isSubmitting ? 'Guardando...' : 'Crear Trabajo'}
               </button>
@@ -496,54 +514,58 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
                 value={personalTitle}
                 onChange={(e) => setPersonalTitle(e.target.value)}
                 required
-                className="w-full px-3 py-2 rounded-lg border border-zinc-200 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-900"
+                className="w-full px-3 py-2.5 rounded-lg border border-zinc-200/80 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-900 text-xs sm:text-sm font-medium min-h-[42px]"
               />
             </div>
 
             <div>
               <label className="block font-medium text-zinc-700 mb-1">Descripción o Notas</label>
               <textarea
-                rows={2}
+                rows={3}
                 placeholder="Detalles, enlaces o requerimientos..."
                 value={personalDesc}
                 onChange={(e) => setPersonalDesc(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-zinc-200 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-900"
+                className="w-full px-3 py-2.5 rounded-lg border border-zinc-200/80 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-900 text-xs sm:text-sm leading-relaxed"
               />
             </div>
 
             {personalCategory === 'savings' && (
-              <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-zinc-50 border">
+              <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-zinc-50 border border-zinc-200/80">
                 <div>
-                  <label className="block text-[10px] text-zinc-500 mb-0.5">Ahorro Actual (COP)</label>
+                  <label className="block text-[10px] text-zinc-500 font-medium mb-1">Ahorro Actual (COP)</label>
                   <input
                     type="number"
                     step="50000"
                     value={currentAmount}
                     onChange={(e) => setCurrentAmount(e.target.value === '' ? '' : Number(e.target.value))}
-                    className="w-full px-2 py-1.5 rounded border bg-white font-semibold"
+                    className="w-full px-2.5 py-2 rounded-lg border border-zinc-200/80 bg-white font-bold font-mono text-zinc-900 min-h-[40px]"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-zinc-500 mb-0.5">Meta Objetivo (COP)</label>
+                  <label className="block text-[10px] text-zinc-500 font-medium mb-1">Meta Objetivo (COP)</label>
                   <input
                     type="number"
                     step="50000"
                     value={targetAmount}
                     onChange={(e) => setTargetAmount(e.target.value === '' ? '' : Number(e.target.value))}
-                    className="w-full px-2 py-1.5 rounded border bg-white font-semibold"
+                    className="w-full px-2.5 py-2 rounded-lg border border-zinc-200/80 bg-white font-bold font-mono text-zinc-900 min-h-[40px]"
                   />
                 </div>
               </div>
             )}
 
-            <div className="pt-2 flex justify-end gap-2">
-              <button type="button" onClick={onClose} className="px-3 py-1.5 text-zinc-600 hover:bg-zinc-100 rounded-lg">
+            <div className="pt-2 flex justify-end gap-2.5">
+              <button 
+                type="button" 
+                onClick={onClose} 
+                className="px-4 py-2 text-zinc-600 hover:bg-zinc-100 active:bg-zinc-200 rounded-lg text-xs font-medium min-h-[44px] transition-colors"
+              >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-1.5 rounded-lg bg-zinc-900 text-white font-semibold hover:bg-zinc-800 disabled:opacity-50"
+                className="px-5 py-2 rounded-lg bg-zinc-900 text-white font-semibold hover:bg-zinc-800 active:scale-[0.98] disabled:opacity-50 text-xs min-h-[44px] shadow-sm transition-all"
               >
                 {isSubmitting ? 'Guardando...' : 'Crear Registro'}
               </button>
@@ -562,7 +584,7 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
                 value={noteTitle}
                 onChange={(e) => setNoteTitle(e.target.value)}
                 required
-                className="w-full px-3 py-2 rounded-lg border border-zinc-200 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-900 font-medium"
+                className="w-full px-3 py-2.5 rounded-lg border border-zinc-200/80 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-900 text-xs sm:text-sm font-medium min-h-[42px]"
               />
             </div>
 
@@ -573,18 +595,22 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
                 placeholder="Escribe lo que quieras recordar aquí..."
                 value={noteContent}
                 onChange={(e) => setNoteContent(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-zinc-200 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-900"
+                className="w-full px-3 py-2.5 rounded-lg border border-zinc-200/80 bg-zinc-50/50 text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-900 text-xs sm:text-sm leading-relaxed"
               />
             </div>
 
-            <div className="pt-2 flex justify-end gap-2">
-              <button type="button" onClick={onClose} className="px-3 py-1.5 text-zinc-600 hover:bg-zinc-100 rounded-lg">
+            <div className="pt-2 flex justify-end gap-2.5">
+              <button 
+                type="button" 
+                onClick={onClose} 
+                className="px-4 py-2 text-zinc-600 hover:bg-zinc-100 active:bg-zinc-200 rounded-lg text-xs font-medium min-h-[44px] transition-colors"
+              >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-1.5 rounded-lg bg-zinc-900 text-white font-semibold hover:bg-zinc-800 disabled:opacity-50"
+                className="px-5 py-2 rounded-lg bg-zinc-900 text-white font-semibold hover:bg-zinc-800 active:scale-[0.98] disabled:opacity-50 text-xs min-h-[44px] shadow-sm transition-all"
               >
                 {isSubmitting ? 'Guardando...' : 'Guardar Nota'}
               </button>

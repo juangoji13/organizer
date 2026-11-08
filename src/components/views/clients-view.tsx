@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useWorkspace } from '@/context/workspace-context';
-import { MessageCircle, Search, X, Users, CheckCircle2, ChevronDown, ChevronUp, Briefcase, GraduationCap } from 'lucide-react';
+import { MessageCircle, Search, X, ChevronDown, ChevronUp, Briefcase } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export function ClientsView() {
@@ -39,7 +39,7 @@ export function ClientsView() {
     <div className="max-w-4xl mx-auto py-4 sm:py-6 px-3.5 sm:px-6">
       {/* Editorial Header */}
       <div className="mb-4 sm:mb-6">
-        <div className="text-[11px] font-semibold tracking-wider uppercase text-zinc-400 font-mono">
+        <div className="text-[11px] font-semibold tracking-wider uppercase text-zinc-500">
           Directorio & Facturación
         </div>
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-950 mt-0.5">
@@ -51,7 +51,7 @@ export function ClientsView() {
       </div>
 
       {/* Search & Quick Filter */}
-      <div className="space-y-2 mb-4">
+      <div className="space-y-2.5 mb-4">
         <div className="relative flex items-center">
           <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 pointer-events-none" />
           <input
@@ -59,14 +59,15 @@ export function ClientsView() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar cliente por nombre o teléfono..."
-            className="w-full pl-10 pr-9 py-2 rounded-xl bg-white border border-zinc-200/90 text-xs sm:text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-400 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] min-h-[40px]"
+            className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-white border border-zinc-200/90 text-base sm:text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-400 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] min-h-[44px]"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 p-1 rounded-md text-zinc-400 hover:text-zinc-700"
+              className="absolute right-3 p-1.5 rounded-md text-zinc-400 hover:text-zinc-700 min-h-[32px] min-w-[32px] flex items-center justify-center"
+              aria-label="Limpiar búsqueda"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="w-4 h-4" />
             </button>
           )}
         </div>
@@ -74,7 +75,7 @@ export function ClientsView() {
         <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 select-none text-xs">
           <button
             onClick={() => setFilterDebtOnly(false)}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-colors text-[11px] min-h-[34px] ${
+            className={`px-3 py-1.5 rounded-lg font-medium transition-colors text-xs min-h-[38px] ${
               !filterDebtOnly
                 ? 'bg-zinc-900 text-white font-semibold shadow-xs'
                 : 'bg-white border border-zinc-200/80 text-zinc-600 hover:text-zinc-900'
@@ -84,15 +85,15 @@ export function ClientsView() {
           </button>
           <button
             onClick={() => setFilterDebtOnly(true)}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-colors text-[11px] min-h-[34px] flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-lg font-medium transition-colors text-xs min-h-[38px] flex items-center gap-1.5 ${
               filterDebtOnly
                 ? 'bg-amber-900 text-white font-semibold shadow-xs'
                 : 'bg-white border border-zinc-200/80 text-zinc-600 hover:text-zinc-900'
             }`}
           >
             <span>Con Saldo Pendiente</span>
-            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-              filterDebtOnly ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800'
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+              filterDebtOnly ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-900 font-bold'
             }`}>
               {totalClientsWithDebt}
             </span>
@@ -103,7 +104,6 @@ export function ClientsView() {
       {/* Clients Card List with Collapsible Job History */}
       <div className="rounded-xl border border-zinc-200/85 bg-white overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.02)] divide-y divide-zinc-100">
         {filteredClients.map((client) => {
-          const hasDebt = client.totalPending > 0;
           const isExpanded = selectedClientId === client.id;
           
           // Find all jobs matching this client
@@ -121,36 +121,36 @@ export function ClientsView() {
               {/* Client Row */}
               <div
                 onClick={() => setSelectedClientId(isExpanded ? null : client.id)}
-                className="p-3.5 sm:p-4 flex flex-col xs:flex-row xs:items-center justify-between gap-3 hover:bg-zinc-50/70 transition-colors cursor-pointer select-none"
+                className="p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-zinc-50/70 transition-colors cursor-pointer select-none"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-xs sm:text-sm font-semibold text-zinc-900 truncate">
+                    <h3 className="text-sm sm:text-base font-semibold text-zinc-900 truncate">
                       {client.name}
                     </h3>
-                    <span className="text-[11px] text-zinc-400 font-mono">
+                    <span className="text-xs text-zinc-500 font-mono">
                       +{client.phone}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2 text-[11px] text-zinc-400 mt-0.5">
+                  <div className="flex items-center gap-2 text-xs text-zinc-500 mt-1">
                     <span>{clientJobs.length || client.totalJobs} trabajos</span>
                     <span>•</span>
                     <span className="text-zinc-600 font-medium">
-                      Generado: <strong className="text-zinc-900 font-mono">${totalGeneradoReal.toLocaleString()} COP</strong>
+                      Generado: <strong className="text-zinc-900 font-mono font-bold">${totalGeneradoReal.toLocaleString()} COP</strong>
                     </span>
                   </div>
                 </div>
 
                 {/* Status, WhatsApp and Accordion Chevron */}
-                <div className="flex items-center justify-between xs:justify-end gap-2.5 pt-2 xs:pt-0 border-t xs:border-t-0 border-zinc-100">
-                  <div className="text-left xs:text-right">
+                <div className="flex items-center justify-between sm:justify-end gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-zinc-100">
+                  <div className="text-left sm:text-right">
                     {totalDeudaReal > 0 ? (
-                      <div className="text-[11px] font-semibold text-amber-900 bg-amber-50/80 px-2 py-0.5 rounded border border-amber-200/50">
+                      <div className="text-xs font-bold text-amber-900 bg-amber-50/80 px-2.5 py-1 rounded-md border border-amber-200/50 font-mono tabular-nums">
                         Debe ${totalDeudaReal.toLocaleString()}
                       </div>
                     ) : (
-                      <div className="text-[10px] font-medium text-emerald-800 bg-emerald-50/60 px-2 py-0.5 rounded">
+                      <div className="text-xs font-semibold text-emerald-800 bg-emerald-50/70 px-2.5 py-1 rounded-md border border-emerald-200/40">
                         Al día
                       </div>
                     )}
@@ -158,14 +158,15 @@ export function ClientsView() {
 
                   <button
                     onClick={(e) => openWhatsApp(client.phone, client.name, e)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-emerald-800 bg-emerald-50/70 hover:bg-emerald-100 border border-emerald-200/50 text-xs font-medium transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-emerald-800 bg-emerald-50/70 hover:bg-emerald-100 border border-emerald-200/50 text-xs font-semibold min-h-[38px] transition-colors"
                     title={`Abrir WhatsApp con ${client.name}`}
+                    aria-label={`Abrir WhatsApp con ${client.name}`}
                   >
-                    <MessageCircle className="w-3.5 h-3.5 text-emerald-700" />
-                    <span className="hidden xs:inline">WhatsApp</span>
+                    <MessageCircle className="w-4 h-4 text-emerald-700" />
+                    <span>WhatsApp</span>
                   </button>
 
-                  <div className="p-1 text-zinc-400">
+                  <div className="p-1.5 text-zinc-400">
                     {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </div>
                 </div>
@@ -179,47 +180,47 @@ export function ClientsView() {
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.18 }}
-                    className="bg-zinc-50/80 border-t border-zinc-100 p-3 sm:p-4"
+                    className="bg-zinc-50/80 border-t border-zinc-100 p-3.5 sm:p-4"
                   >
-                    <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-zinc-500 font-mono mb-2">
+                    <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2.5">
                       <div className="flex items-center gap-1.5">
                         <Briefcase className="w-3.5 h-3.5 text-zinc-400" />
                         <span>Trabajos Realizados ({clientJobs.length})</span>
                       </div>
-                      <span>Total: ${totalGeneradoReal.toLocaleString()} COP</span>
+                      <span className="font-mono tabular-nums">Total: ${totalGeneradoReal.toLocaleString()} COP</span>
                     </div>
 
                     {clientJobs.length === 0 ? (
-                      <p className="text-xs text-zinc-400 py-2">
+                      <p className="text-xs text-zinc-500 py-2">
                         No hay trabajos detallados registrados aún para este cliente.
                       </p>
                     ) : (
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         {clientJobs.map((job) => (
                           <div
                             key={job.id}
-                            className="p-2.5 rounded-lg bg-white border border-zinc-200/70 flex items-center justify-between gap-2 text-xs"
+                            className="p-3 rounded-lg bg-white border border-zinc-200/70 flex items-center justify-between gap-2 text-xs"
                           >
                             <div className="min-w-0">
                               <div className="font-semibold text-zinc-900 truncate">
                                 {job.title}
                               </div>
-                              <div className="text-[10px] text-zinc-500 font-mono">
-                                {job.subject} • {job.platform} • Límite: {job.deadlineDate}
+                              <div className="text-[11px] text-zinc-500 mt-0.5">
+                                {job.subject} • {job.platform} • Límite: <span className="font-mono">{job.deadlineDate}</span>
                               </div>
                             </div>
 
                             <div className="text-right shrink-0">
-                              <div className="font-mono font-semibold text-zinc-900">
+                              <div className="font-mono font-bold text-zinc-900 tabular-nums">
                                 ${job.totalPrice.toLocaleString()} COP
                               </div>
-                              <div className="text-[10px]">
+                              <div className="text-[11px] mt-0.5">
                                 {job.status === 'delivered' ? (
-                                  <span className="text-emerald-700 font-medium">Entregado</span>
+                                  <span className="text-emerald-700 font-semibold">Entregado</span>
                                 ) : job.paidAmount >= job.totalPrice ? (
-                                  <span className="text-emerald-700 font-medium">Pagado</span>
+                                  <span className="text-emerald-700 font-semibold">Pagado</span>
                                 ) : (
-                                  <span className="text-amber-800 font-medium">
+                                  <span className="text-amber-800 font-bold font-mono tabular-nums">
                                     Debe ${(job.totalPrice - job.paidAmount).toLocaleString()}
                                   </span>
                                 )}
@@ -237,7 +238,7 @@ export function ClientsView() {
         })}
 
         {filteredClients.length === 0 && (
-          <div className="p-8 text-center text-xs text-zinc-400">
+          <div className="p-8 text-center text-xs text-zinc-500">
             No se encontraron clientes que coincidan con la búsqueda.
           </div>
         )}
