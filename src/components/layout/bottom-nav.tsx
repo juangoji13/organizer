@@ -7,157 +7,163 @@ import {
   CalendarCheck, 
   Layers, 
   CreditCard, 
-  Users, 
-  Menu,
+  Plus,
   GraduationCap,
-  Target,
-  PiggyBank
+  Sparkles,
+  PiggyBank,
+  User
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
-interface BottomNavTabItem {
-  id: ActiveNavTab | 'menu';
-  label: string;
-  icon: React.ElementType;
-  badge?: number | boolean;
-  badgeColor?: 'zinc' | 'amber' | 'emerald';
+interface BottomNavProps {
+  onOpenCreateModal?: () => void;
 }
 
-export function BottomNav() {
-  const { mode, activeTab, setActiveTab, jobs, clients, setIsSidebarOpen } = useWorkspace();
+export function BottomNav({ onOpenCreateModal }: BottomNavProps) {
+  const { mode, setMode, activeTab, setActiveTab, jobs, clients } = useWorkspace();
 
-  // Metrics for subtle, restrained badges
   const pendingUrgentCount = jobs.filter((j) => j.isUrgentToday && j.status !== 'delivered').length;
   const hasPendingDebt = clients.some((c) => c.totalPending > 0);
 
-  const clientTabs: BottomNavTabItem[] = [
-    {
-      id: 'today',
-      label: 'Hoy',
-      icon: CalendarCheck,
-      badge: pendingUrgentCount > 0 ? pendingUrgentCount : undefined,
-      badgeColor: 'zinc',
-    },
-    {
-      id: 'jobs',
-      label: 'Trabajos',
-      icon: Layers,
-    },
-    {
-      id: 'finance',
-      label: 'Finanzas',
-      icon: CreditCard,
-      badge: hasPendingDebt,
-      badgeColor: 'amber',
-    },
-    {
-      id: 'clients',
-      label: 'Clientes',
-      icon: Users,
-    },
-    {
-      id: 'menu',
-      label: 'Menú',
-      icon: Menu,
-    },
-  ];
-
-  const personalTabs: BottomNavTabItem[] = [
-    {
-      id: 'today',
-      label: 'Hoy',
-      icon: CalendarCheck,
-    },
-    {
-      id: 'personal_subjects',
-      label: 'Materias',
-      icon: GraduationCap,
-    },
-    {
-      id: 'personal_goals',
-      label: 'Metas',
-      icon: Target,
-    },
-    {
-      id: 'personal_savings',
-      label: 'Ahorro',
-      icon: PiggyBank,
-    },
-    {
-      id: 'menu',
-      label: 'Menú',
-      icon: Menu,
-    },
-  ];
-
-  const tabs = mode === 'clients' ? clientTabs : personalTabs;
-
-  const handleTabClick = (tabId: ActiveNavTab | 'menu') => {
-    if (tabId === 'menu') {
-      setIsSidebarOpen(true);
-    } else {
-      setActiveTab(tabId);
-    }
-  };
-
   return (
     <nav 
-      aria-label="Navegación principal móvil"
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/92 backdrop-blur-xl border-t border-zinc-200/80 bottom-nav-safe shadow-[0_-4px_20px_rgba(0,0,0,0.03)]"
+      aria-label="Navegación móvil"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/94 backdrop-blur-xl border-t border-zinc-200/80 bottom-nav-safe shadow-[0_-4px_20px_rgba(0,0,0,0.03)] select-none"
     >
-      <div className="flex items-center justify-around px-2 pt-1.5 pb-1 max-w-md mx-auto">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = tab.id !== 'menu' && activeTab === tab.id;
-
-          return (
+      <div className="flex items-center justify-around px-3 py-1.5 max-w-md mx-auto">
+        {mode === 'clients' ? (
+          <>
+            {/* Hoy */}
             <button
-              key={tab.id}
-              onClick={() => handleTabClick(tab.id)}
-              className="relative flex-1 flex flex-col items-center justify-center py-1 px-1 min-h-[48px] rounded-xl transition-colors select-none focus:outline-none"
-              aria-current={isActive ? 'page' : undefined}
+              onClick={() => setActiveTab('today')}
+              className={`flex-1 flex flex-col items-center py-1 rounded-xl transition-colors ${
+                activeTab === 'today' ? 'text-zinc-950 font-semibold' : 'text-zinc-400'
+              }`}
             >
-              {/* Active Tab Spring Highlight Indicator */}
-              {isActive && (
-                <motion.div
-                  layoutId="bottom-nav-active-pill"
-                  transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-                  className="absolute inset-x-1.5 inset-y-1 bg-zinc-100/90 rounded-xl -z-0 border border-zinc-200/50"
-                />
-              )}
-
-              <div className="relative z-10 flex flex-col items-center gap-0.5">
-                <div className="relative">
-                  <Icon
-                    strokeWidth={isActive ? 2.2 : 1.75}
-                    className={`w-[21px] h-[21px] transition-colors ${
-                      isActive ? 'text-zinc-950' : 'text-zinc-400 group-hover:text-zinc-600'
-                    }`}
-                  />
-
-                  {/* Micro Badge */}
-                  {tab.badge !== undefined && (
-                    typeof tab.badge === 'number' ? (
-                      <span className="absolute -top-1 -right-2 px-1 min-w-[15px] h-[15px] rounded-full text-[9px] font-bold flex items-center justify-center bg-zinc-900 text-white shadow-xs">
-                        {tab.badge}
-                      </span>
-                    ) : (
-                      <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-600 ring-2 ring-white" />
-                    )
-                  )}
-                </div>
-
-                <span
-                  className={`text-[10px] tracking-tight transition-colors ${
-                    isActive ? 'font-semibold text-zinc-950' : 'font-medium text-zinc-400'
-                  }`}
-                >
-                  {tab.label}
-                </span>
+              <div className="relative">
+                <CalendarCheck className={`w-5 h-5 ${activeTab === 'today' ? 'stroke-[2.2]' : 'stroke-[1.75]'}`} />
+                {pendingUrgentCount > 0 && (
+                  <span className="absolute -top-1 -right-2 px-1 min-w-[14px] h-[14px] rounded-full text-[9px] font-bold flex items-center justify-center bg-zinc-900 text-white">
+                    {pendingUrgentCount}
+                  </span>
+                )}
               </div>
+              <span className="text-[10px] mt-0.5">Hoy</span>
             </button>
-          );
-        })}
+
+            {/* Trabajos */}
+            <button
+              onClick={() => setActiveTab('jobs')}
+              className={`flex-1 flex flex-col items-center py-1 rounded-xl transition-colors ${
+                activeTab === 'jobs' ? 'text-zinc-950 font-semibold' : 'text-zinc-400'
+              }`}
+            >
+              <Layers className={`w-5 h-5 ${activeTab === 'jobs' ? 'stroke-[2.2]' : 'stroke-[1.75]'}`} />
+              <span className="text-[10px] mt-0.5">Trabajos</span>
+            </button>
+
+            {/* Central Action: (+) Crear */}
+            <div className="flex-1 flex justify-center">
+              <button
+                onClick={onOpenCreateModal}
+                className="w-10 h-10 rounded-full bg-zinc-900 text-white flex items-center justify-center shadow-md active:scale-95 transition-transform"
+                title="Nuevo Trabajo"
+                aria-label="Crear nuevo trabajo"
+              >
+                <Plus className="w-5 h-5 stroke-[2.5]" />
+              </button>
+            </div>
+
+            {/* Finanzas */}
+            <button
+              onClick={() => setActiveTab('finance')}
+              className={`flex-1 flex flex-col items-center py-1 rounded-xl transition-colors ${
+                activeTab === 'finance' ? 'text-zinc-950 font-semibold' : 'text-zinc-400'
+              }`}
+            >
+              <div className="relative">
+                <CreditCard className={`w-5 h-5 ${activeTab === 'finance' ? 'stroke-[2.2]' : 'stroke-[1.75]'}`} />
+                {hasPendingDebt && (
+                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-600 ring-2 ring-white" />
+                )}
+              </div>
+              <span className="text-[10px] mt-0.5">Finanzas</span>
+            </button>
+
+            {/* Switch to Personal */}
+            <button
+              onClick={() => {
+                setMode('personal');
+                setActiveTab('today');
+              }}
+              className="flex-1 flex flex-col items-center py-1 rounded-xl transition-colors text-zinc-400 hover:text-zinc-700"
+              title="Ir a Espacio Personal"
+            >
+              <User className="w-5 h-5 stroke-[1.75]" />
+              <span className="text-[10px] mt-0.5">Personal</span>
+            </button>
+          </>
+        ) : (
+          <>
+            {/* Personal: Mi Día */}
+            <button
+              onClick={() => setActiveTab('today')}
+              className={`flex-1 flex flex-col items-center py-1 rounded-xl transition-colors ${
+                activeTab === 'today' ? 'text-zinc-950 font-semibold' : 'text-zinc-400'
+              }`}
+            >
+              <CalendarCheck className={`w-5 h-5 ${activeTab === 'today' ? 'stroke-[2.2]' : 'stroke-[1.75]'}`} />
+              <span className="text-[10px] mt-0.5">Mi Día</span>
+            </button>
+
+            {/* Personal: Materias U */}
+            <button
+              onClick={() => setActiveTab('personal_subjects')}
+              className={`flex-1 flex flex-col items-center py-1 rounded-xl transition-colors ${
+                activeTab === 'personal_subjects' ? 'text-zinc-950 font-semibold' : 'text-zinc-400'
+              }`}
+            >
+              <GraduationCap className={`w-5 h-5 ${activeTab === 'personal_subjects' ? 'stroke-[2.2]' : 'stroke-[1.75]'}`} />
+              <span className="text-[10px] mt-0.5">Materias</span>
+            </button>
+
+            {/* Central Action: (+) Crear */}
+            <div className="flex-1 flex justify-center">
+              <button
+                onClick={onOpenCreateModal}
+                className="w-10 h-10 rounded-full bg-zinc-900 text-white flex items-center justify-center shadow-md active:scale-95 transition-transform"
+                title="Nueva Meta"
+                aria-label="Crear nueva meta personal"
+              >
+                <Plus className="w-5 h-5 stroke-[2.5]" />
+              </button>
+            </div>
+
+            {/* Personal: Ideas Dev */}
+            <button
+              onClick={() => setActiveTab('personal_ideas')}
+              className={`flex-1 flex flex-col items-center py-1 rounded-xl transition-colors ${
+                activeTab === 'personal_ideas' ? 'text-zinc-950 font-semibold' : 'text-zinc-400'
+              }`}
+            >
+              <Sparkles className={`w-5 h-5 ${activeTab === 'personal_ideas' ? 'stroke-[2.2]' : 'stroke-[1.75]'}`} />
+              <span className="text-[10px] mt-0.5">Ideas Dev</span>
+            </button>
+
+            {/* Switch to Clientes */}
+            <button
+              onClick={() => {
+                setMode('clients');
+                setActiveTab('today');
+              }}
+              className="flex-1 flex flex-col items-center py-1 rounded-xl transition-colors text-zinc-400 hover:text-zinc-700"
+              title="Ir a Clientes"
+            >
+              <Layers className="w-5 h-5 stroke-[1.75]" />
+              <span className="text-[10px] mt-0.5">Clientes</span>
+            </button>
+          </>
+        )}
       </div>
     </nav>
   );

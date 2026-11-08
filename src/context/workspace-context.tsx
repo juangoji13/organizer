@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { WorkspaceMode, ActiveNavTab, ClientJob, ClientContact, PersonalGoal } from '@/types/organizer';
 import { createClient } from '@/lib/supabase/client';
+import { PersonalItemType } from '@/types/database.types';
 
 interface WorkspaceContextType {
   mode: WorkspaceMode;
@@ -13,6 +14,8 @@ interface WorkspaceContextType {
   toggleDeliverable: (jobId: string, deliverableId: string) => void;
   markJobDelivered: (jobId: string) => void;
   markJobPaid: (jobId: string) => void;
+  createJob: (newJob: Omit<ClientJob, 'id'>) => Promise<void>;
+  createPersonalItem: (newItem: Omit<PersonalGoal, 'id'>) => Promise<void>;
   clients: ClientContact[];
   personalGoals: PersonalGoal[];
   toggleGoal: (goalId: string) => void;
@@ -349,6 +352,111 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     refetchData();
   }, [refetchData]);
 
+  // Create Job with Supabase Sync
+  const createJob = async (newJobData: Omit<ClientJob, 'id'>) => {
+    const tempId = 'temp-' + Date.now();
+    const optimisticJob: ClientJob = {
+      ...newJobData,
+      id: tempId,
+    };
+    setJobs((prev) => [optimisticJob, ...prev]);
+
+    try {
+      const supabase = createClient();
+      let clientId: string | null = null;
+      const { data: existingClients } = await supabase
+        .from('clients')
+        .select('id')
+        .ilike('name', newJobData.clientName)
+        .limit(1);
+
+      if (existingClients && existingClients.length > 0) {
+        clientId = existingClients[0].id;
+      } else {
+        const { data: newClient } = await supabase
+          .from('clients')
+          .insert({
+            name: newJobData.clientName,
+            phone: newJobData.clientPhone,
+          })
+          .select('id')
+          .single();
+        if (newClient) clientId = newClient.id;
+      }
+
+      const validClientId = clientId || 'c0000000-0000-0000-0000-000000000001';
+
+      const dueDate = newJobData.deadlineDate 
+        ? `${newJobData.deadlineDate}T23:59:00+00:00` 
+        : new Date().toISOString();
+
+      const { data: insertedJob } = await supabase
+        .from('jobs')
+        .insert({
+          client_id: validClientId,
+          title: newJobData.title,
+          subject: newJobData.subject,
+          platform: newJobData.platform,
+          username: newJobData.platformUser,
+          password: newJobData.platformPass,
+          rate: newJobData.totalPrice,
+          amount_paid: newJobData.paidAmount,
+          due_date: dueDate,
+          status: newJobData.status || 'in_progress',
+        })
+        .select('id')
+        .single();
+
+      if (insertedJob) {
+        if (newJobData.deliverables.length > 0) {
+          const deliverablesToInsert = newJobData.deliverables.map((d, index) => ({
+            job_id: insertedJob.id,
+            title: d.title,
+            category: d.type === 'test' ? 'Test' : 'Assignment',
+            is_completed: d.isCompleted,
+            sort_order: index + 1,
+          }));
+
+          await supabase.from('deliverables').insert(deliverablesToInsert);
+        }
+
+        await refetchData();
+      }
+    } catch (e) {
+      console.warn('Create job sync failed:', e);
+    }
+  };
+
+  // Create Personal Item with Supabase Sync
+  const createPersonalItem = async (newItem: Omit<PersonalGoal, 'id'>) => {
+    const tempId = 'temp-p-' + Date.now();
+    const optimisticItem: PersonalGoal = {
+      ...newItem,
+      id: tempId,
+    };
+    setPersonalGoals((prev) => [optimisticItem, ...prev]);
+
+    try {
+      const supabase = createClient();
+      let dbType: PersonalItemType = 'study_goal';
+      if (newItem.category === 'savings') dbType = 'savings';
+      else if (newItem.category === 'dev') dbType = 'programming';
+
+      await supabase.from('personal_items').insert({
+        type: dbType,
+        title: newItem.title,
+        description: newItem.description || null,
+        progress: newItem.currentAmount || 0,
+        target: newItem.targetAmount || 100,
+        status: newItem.isDone ? 'completed' : 'active',
+      });
+
+      await refetchData();
+    } catch (e) {
+      console.warn('Create personal item sync failed:', e);
+    }
+  };
+
   // Mutations with optimistic UI and live sync to Supabase
   const toggleDeliverable = async (jobId: string, deliverableId: string) => {
     let newCompletedState = false;
@@ -456,6 +564,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         toggleDeliverable,
         markJobDelivered,
         markJobPaid,
+        createJob,
+        createPersonalItem,
         clients,
         personalGoals,
         toggleGoal,
