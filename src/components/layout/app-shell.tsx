@@ -12,6 +12,7 @@ import { ClientsView } from '@/components/views/clients-view';
 import { PersonalView } from '@/components/views/personal-view';
 import { SettingsView } from '@/components/views/settings-view';
 import { UniversalCreateModal } from '@/components/common/universal-create-modal';
+import { ToastContainer } from '@/components/common/toast-container';
 
 function MainContent() {
   const { activeTab, mode } = useWorkspace();
@@ -51,11 +52,14 @@ function MainContent() {
       </main>
       <BottomNav onOpenCreateModal={handleOpenCreateModal} />
 
-      {/* Universal Creator Modal (Zero guessing!) */}
+      {/* Universal Creator Modal */}
       <UniversalCreateModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
       />
+
+      {/* Undo & Feedback Notifications */}
+      <ToastContainer />
     </div>
   );
 }

@@ -2,14 +2,36 @@
 
 import React, { useState, useMemo } from 'react';
 import { useWorkspace } from '@/context/workspace-context';
-import { MessageCircle, Search, X, ChevronDown, ChevronUp, Briefcase } from 'lucide-react';
+import {
+  MessageCircle,
+  Search,
+  X,
+  ChevronDown,
+  ChevronUp,
+  UserPlus,
+  CreditCard,
+  Pencil,
+  Clock,
+  CheckCircle2,
+  Phone,
+  Briefcase
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { CreateClientModal } from '@/components/clients/create-client-modal';
+import { PartialPaymentModal } from '@/components/jobs/partial-payment-modal';
+import { EditJobModal } from '@/components/jobs/edit-job-modal';
+import { ClientJob } from '@/types/organizer';
 
 export function ClientsView() {
   const { clients, jobs } = useWorkspace();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDebtOnly, setFilterDebtOnly] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+
+  // Modals state
+  const [isCreateClientOpen, setIsCreateClientOpen] = useState(false);
+  const [selectedJobForPayment, setSelectedJobForPayment] = useState<ClientJob | null>(null);
+  const [selectedJobForEdit, setSelectedJobForEdit] = useState<ClientJob | null>(null);
 
   const openWhatsApp = (phone: string, name: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -18,9 +40,40 @@ export function ClientsView() {
     window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
   };
 
+  // Pre-calculate client job mappings and totals
+  const clientsWithData = useMemo(() => {
+    return clients.map((client) => {
+      const clientJobs = jobs.filter((j) =>
+        j.clientName.toLowerCase() === client.name.toLowerCase() ||
+        (client.phone && j.clientPhone && j.clientPhone.replace(/\D/g, '') === client.phone.replace(/\D/g, ''))
+      );
+
+      const totalGenerado = clientJobs.length > 0
+        ? clientJobs.reduce((acc, j) => acc + j.totalPrice, 0)
+        : (client.totalPaid + client.totalPending);
+
+      const totalCobrado = clientJobs.length > 0
+        ? clientJobs.reduce((acc, j) => acc + j.paidAmount, 0)
+        : client.totalPaid;
+
+      const totalDeuda = Math.max(0, totalGenerado - totalCobrado);
+      const firstJobWithDebt = clientJobs.find((j) => j.totalPrice > j.paidAmount) || null;
+
+      return {
+        ...client,
+        clientJobs,
+        totalGenerado,
+        totalCobrado,
+        totalDeuda,
+        firstJobWithDebt,
+      };
+    });
+  }, [clients, jobs]);
+
+  // Filter clients by search & debt
   const filteredClients = useMemo(() => {
-    return clients.filter((client) => {
-      if (filterDebtOnly && client.totalPending <= 0) return false;
+    return clientsWithData.filter((client) => {
+      if (filterDebtOnly && client.totalDeuda <= 0) return false;
 
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
@@ -31,203 +84,314 @@ export function ClientsView() {
 
       return true;
     });
-  }, [clients, searchQuery, filterDebtOnly]);
+  }, [clientsWithData, searchQuery, filterDebtOnly]);
 
-  const totalClientsWithDebt = clients.filter((c) => c.totalPending > 0).length;
+  const totalClientsWithDebt = clientsWithData.filter((c) => c.totalDeuda > 0).length;
 
   return (
-    <div className="max-w-4xl mx-auto py-4 sm:py-6 px-3.5 sm:px-6">
-      {/* Editorial Header */}
-      <div className="mb-4 sm:mb-6">
-        <div className="text-[11px] font-semibold tracking-wider uppercase text-zinc-500">
-          Directorio & Facturación
+    <div className="max-w-4xl mx-auto py-3.5 sm:py-6 px-3 sm:px-6">
+      {/* Ultralight Clean Header */}
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div>
+          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900">
+            Clientes
+          </h1>
+          <p className="text-xs text-zinc-500 mt-0.5">
+            {clients.length} contactos registrados • {totalClientsWithDebt} con saldo pendiente
+          </p>
         </div>
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-950 mt-0.5">
-          Clientes & Trabajos Realizados
-        </h1>
-        <p className="text-xs text-zinc-500 mt-1">
-          Consulta todo lo que te ha generado cada cliente y el historial completo de sus encargos.
-        </p>
+
+        {/* Direct Action: + Nuevo Cliente */}
+        <button
+          type="button"
+          onClick={() => setIsCreateClientOpen(true)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 text-xs font-semibold transition-colors shadow-xs cursor-pointer shrink-0"
+        >
+          <UserPlus className="w-3.5 h-3.5" />
+          <span>Nuevo Cliente</span>
+        </button>
       </div>
 
-      {/* Search & Quick Filter */}
-      <div className="space-y-2.5 mb-4">
-        <div className="relative flex items-center">
-          <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 pointer-events-none" />
+      {/* Ultralight Search & Filter Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-3.5">
+        {/* Search Input */}
+        <div className="relative flex-1">
+          <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar cliente por nombre o teléfono..."
-            className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-white border border-zinc-200/90 text-base sm:text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-400 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] min-h-[44px]"
+            placeholder="Buscar por nombre o teléfono..."
+            className="w-full pl-8.5 pr-8 py-2 rounded-xl bg-zinc-50 border border-zinc-200/70 text-xs sm:text-sm text-zinc-900 placeholder:text-zinc-400 focus:bg-white focus:outline-none focus:border-zinc-300 transition-colors"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 p-1.5 rounded-md text-zinc-400 hover:text-zinc-700 min-h-[32px] min-w-[32px] flex items-center justify-center"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-zinc-400 hover:text-zinc-700"
               aria-label="Limpiar búsqueda"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 select-none text-xs">
+        {/* Filter Pills */}
+        <div className="flex items-center gap-1 shrink-0 text-xs">
           <button
             onClick={() => setFilterDebtOnly(false)}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-colors text-xs min-h-[38px] ${
+            className={`px-2.5 py-1.5 rounded-lg font-medium transition-colors ${
               !filterDebtOnly
-                ? 'bg-zinc-900 text-white font-semibold shadow-xs'
-                : 'bg-white border border-zinc-200/80 text-zinc-600 hover:text-zinc-900'
+                ? 'bg-zinc-900 text-white font-semibold'
+                : 'bg-zinc-100/80 text-zinc-600 hover:bg-zinc-200/70'
             }`}
           >
             Todos ({clients.length})
           </button>
           <button
             onClick={() => setFilterDebtOnly(true)}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-colors text-xs min-h-[38px] flex items-center gap-1.5 ${
+            className={`px-2.5 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 ${
               filterDebtOnly
-                ? 'bg-amber-900 text-white font-semibold shadow-xs'
-                : 'bg-white border border-zinc-200/80 text-zinc-600 hover:text-zinc-900'
+                ? 'bg-amber-900 text-white font-semibold'
+                : 'bg-zinc-100/80 text-zinc-600 hover:bg-zinc-200/70'
             }`}
           >
-            <span>Con Saldo Pendiente</span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-              filterDebtOnly ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-900 font-bold'
-            }`}>
+            <span>Con Saldo</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono tabular-nums ${
+                filterDebtOnly ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-900 font-bold'
+              }`}
+            >
               {totalClientsWithDebt}
             </span>
           </button>
         </div>
       </div>
 
-      {/* Clients Card List with Collapsible Job History */}
-      <div className="rounded-xl border border-zinc-200/85 bg-white overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.02)] divide-y divide-zinc-100">
+      {/* Clean Client Rows with Subtle Divider (No Russian Dolls!) */}
+      <div className="bg-white rounded-2xl border border-zinc-200/75 shadow-[0_1px_3px_rgba(0,0,0,0.02)] divide-y divide-zinc-100 overflow-hidden">
         {filteredClients.map((client) => {
           const isExpanded = selectedClientId === client.id;
-          
-          // Find all jobs matching this client
-          const clientJobs = jobs.filter((j) => 
-            j.clientName.toLowerCase() === client.name.toLowerCase() ||
-            j.clientPhone.replace(/\D/g, '') === client.phone.replace(/\D/g, '')
-          );
-          
-          const totalGeneradoReal = clientJobs.reduce((acc, j) => acc + j.totalPrice, 0) || (client.totalPaid + client.totalPending);
-          const totalCobradoReal = clientJobs.reduce((acc, j) => acc + j.paidAmount, 0) || client.totalPaid;
-          const totalDeudaReal = totalGeneradoReal - totalCobradoReal;
 
           return (
             <div key={client.id} className="transition-colors">
               {/* Client Row */}
               <div
                 onClick={() => setSelectedClientId(isExpanded ? null : client.id)}
-                className="p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-zinc-50/70 transition-colors cursor-pointer select-none"
+                className="px-3.5 sm:px-4 py-3 sm:py-3.5 flex items-center justify-between gap-3 hover:bg-zinc-50/70 transition-colors cursor-pointer select-none"
               >
+                {/* Left: Name, Phone & Work Summary */}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm sm:text-base font-semibold text-zinc-900 truncate">
+                    <h3 className="text-xs sm:text-sm font-semibold text-zinc-900 truncate">
                       {client.name}
                     </h3>
-                    <span className="text-xs text-zinc-500 font-mono">
-                      +{client.phone}
-                    </span>
+                    {client.phone && (
+                      <span className="text-[11px] text-zinc-500 font-mono">
+                        +{client.phone}
+                      </span>
+                    )}
                   </div>
 
-                  <div className="flex items-center gap-2 text-xs text-zinc-500 mt-1">
-                    <span>{clientJobs.length || client.totalJobs} trabajos</span>
+                  <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 mt-0.5">
+                    <span>
+                      {client.clientJobs.length} {client.clientJobs.length === 1 ? 'encargo' : 'encargos'}
+                    </span>
                     <span>•</span>
-                    <span className="text-zinc-600 font-medium">
-                      Generado: <strong className="text-zinc-900 font-mono font-bold">${totalGeneradoReal.toLocaleString()} COP</strong>
+                    <span>
+                      Generado:{' '}
+                      <strong className="text-zinc-800 font-mono font-semibold">
+                        ${client.totalGenerado.toLocaleString()} COP
+                      </strong>
                     </span>
                   </div>
                 </div>
 
-                {/* Status, WhatsApp and Accordion Chevron */}
-                <div className="flex items-center justify-between sm:justify-end gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-zinc-100">
-                  <div className="text-left sm:text-right">
-                    {totalDeudaReal > 0 ? (
-                      <div className="text-xs font-bold text-amber-900 bg-amber-50/80 px-2.5 py-1 rounded-md border border-amber-200/50 font-mono tabular-nums">
-                        Debe ${totalDeudaReal.toLocaleString()}
-                      </div>
+                {/* Right: Debt badge, Direct Payment Button, WhatsApp & Chevron */}
+                <div className="flex items-center gap-2 shrink-0">
+                  {/* Status / Debt Badge */}
+                  {client.totalDeuda > 0 ? (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] sm:text-[11px] font-bold text-amber-900 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60 font-mono tabular-nums">
+                        Debe ${client.totalDeuda.toLocaleString()}
+                      </span>
+
+                      {/* Direct Partial Payment Button */}
+                      {client.firstJobWithDebt && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedJobForPayment(client.firstJobWithDebt);
+                          }}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] sm:text-[11px] font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/60 transition-colors cursor-pointer"
+                          title="Registrar abono directo"
+                        >
+                          <CreditCard className="w-3 h-3 text-emerald-700" />
+                          <span className="hidden sm:inline">Abonar</span>
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/40">
+                      Al día
+                    </span>
+                  )}
+
+                  {/* WhatsApp Quick Action */}
+                  {client.phone && (
+                    <button
+                      type="button"
+                      onClick={(e) => openWhatsApp(client.phone, client.name, e)}
+                      className="p-1.5 sm:px-2.5 sm:py-1 rounded-lg text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors flex items-center gap-1 text-[11px] font-medium"
+                      title={`Escribir por WhatsApp a ${client.name}`}
+                      aria-label={`WhatsApp con ${client.name}`}
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">WhatsApp</span>
+                    </button>
+                  )}
+
+                  {/* Chevron Toggle */}
+                  <div className="text-zinc-400 p-0.5">
+                    {isExpanded ? (
+                      <ChevronUp className="w-4 h-4" />
                     ) : (
-                      <div className="text-xs font-semibold text-emerald-800 bg-emerald-50/70 px-2.5 py-1 rounded-md border border-emerald-200/40">
-                        Al día
-                      </div>
+                      <ChevronDown className="w-4 h-4" />
                     )}
-                  </div>
-
-                  <button
-                    onClick={(e) => openWhatsApp(client.phone, client.name, e)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-emerald-800 bg-emerald-50/70 hover:bg-emerald-100 border border-emerald-200/50 text-xs font-semibold min-h-[38px] transition-colors"
-                    title={`Abrir WhatsApp con ${client.name}`}
-                    aria-label={`Abrir WhatsApp con ${client.name}`}
-                  >
-                    <MessageCircle className="w-4 h-4 text-emerald-700" />
-                    <span>WhatsApp</span>
-                  </button>
-
-                  <div className="p-1.5 text-zinc-400">
-                    {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </div>
                 </div>
               </div>
 
-              {/* Collapsible History of Specific Jobs Done for This Student */}
+              {/* Clean Timeline Job History (No Russian Dolls / No Nested Card Boxes) */}
               <AnimatePresence>
                 {isExpanded && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.18 }}
-                    className="bg-zinc-50/80 border-t border-zinc-100 p-3.5 sm:p-4"
+                    transition={{ duration: 0.16 }}
+                    className="border-t border-zinc-100 bg-zinc-50/50 px-4 sm:px-6 py-3.5"
                   >
-                    <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2.5">
+                    {/* Timeline Header */}
+                    <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-zinc-400 mb-3 px-0.5">
                       <div className="flex items-center gap-1.5">
                         <Briefcase className="w-3.5 h-3.5 text-zinc-400" />
-                        <span>Trabajos Realizados ({clientJobs.length})</span>
+                        <span>Historial de Encargos ({client.clientJobs.length})</span>
                       </div>
-                      <span className="font-mono tabular-nums">Total: ${totalGeneradoReal.toLocaleString()} COP</span>
+                      <span className="font-mono tabular-nums text-zinc-600">
+                        Cobrado: ${client.totalCobrado.toLocaleString()} COP
+                      </span>
                     </div>
 
-                    {clientJobs.length === 0 ? (
-                      <p className="text-xs text-zinc-500 py-2">
+                    {client.clientJobs.length === 0 ? (
+                      <p className="text-xs text-zinc-400 py-2 px-1">
                         No hay trabajos detallados registrados aún para este cliente.
                       </p>
                     ) : (
-                      <div className="space-y-2">
-                        {clientJobs.map((job) => (
-                          <div
-                            key={job.id}
-                            className="p-3 rounded-lg bg-white border border-zinc-200/70 flex items-center justify-between gap-2 text-xs"
-                          >
-                            <div className="min-w-0">
-                              <div className="font-semibold text-zinc-900 truncate">
-                                {job.title}
-                              </div>
-                              <div className="text-[11px] text-zinc-500 mt-0.5">
-                                {job.subject} • {job.platform} • Límite: <span className="font-mono">{job.deadlineDate}</span>
-                              </div>
-                            </div>
+                      /* Clean Vertical Timeline */
+                      <div className="relative pl-5 ml-1 space-y-3.5 my-1 before:absolute before:left-1.5 before:top-2 before:bottom-2 before:w-px before:bg-zinc-200">
+                        {client.clientJobs.map((job) => {
+                          const jobDebt = Math.max(0, job.totalPrice - job.paidAmount);
+                          const isDelivered = job.status === 'delivered';
 
-                            <div className="text-right shrink-0">
-                              <div className="font-mono font-bold text-zinc-900 tabular-nums">
-                                ${job.totalPrice.toLocaleString()} COP
-                              </div>
-                              <div className="text-[11px] mt-0.5">
-                                {job.status === 'delivered' ? (
-                                  <span className="text-emerald-700 font-semibold">Entregado</span>
-                                ) : job.paidAmount >= job.totalPrice ? (
-                                  <span className="text-emerald-700 font-semibold">Pagado</span>
-                                ) : (
-                                  <span className="text-amber-800 font-bold font-mono tabular-nums">
-                                    Debe ${(job.totalPrice - job.paidAmount).toLocaleString()}
-                                  </span>
-                                )}
+                          return (
+                            <div key={job.id} className="relative group/timeline">
+                              {/* Node Dot on Timeline */}
+                              <div
+                                className={`absolute -left-5 top-1.5 w-2 h-2 rounded-full ring-2 ring-white ${
+                                  jobDebt > 0
+                                    ? 'bg-amber-500'
+                                    : isDelivered
+                                    ? 'bg-emerald-600'
+                                    : 'bg-zinc-400'
+                                }`}
+                              />
+
+                              {/* Timeline Item Content (Sleek row without heavy container borders) */}
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-3 py-0.5">
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-semibold text-zinc-900 truncate">
+                                      {job.title}
+                                    </span>
+                                    <span className="text-[10px] font-semibold text-zinc-500 bg-zinc-100 px-1.5 py-0.2 rounded font-mono shrink-0">
+                                      {job.platform || 'General'}
+                                    </span>
+                                  </div>
+
+                                  <div className="text-[11px] text-zinc-500 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                                    <span>{job.subject}</span>
+                                    <span>•</span>
+                                    <span className="flex items-center gap-1">
+                                      <Clock className="w-3 h-3 text-zinc-400" />
+                                      <span>
+                                        Entrega:{' '}
+                                        <strong className="font-mono text-zinc-700">
+                                          {job.deadlineDate || 'Sin fecha'}
+                                        </strong>{' '}
+                                        ({job.deadlineTime})
+                                      </span>
+                                    </span>
+                                    {job.deliverables.length > 0 && (
+                                      <>
+                                        <span>•</span>
+                                        <span className="font-mono">
+                                          {job.deliverables.filter((d) => d.isCompleted).length}/
+                                          {job.deliverables.length} entregables
+                                        </span>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Price, Status & Direct Action Buttons */}
+                                <div className="flex items-center justify-between sm:justify-end gap-2.5 pt-1 sm:pt-0 shrink-0">
+                                  <div className="text-left sm:text-right">
+                                    <div className="font-mono font-bold text-xs text-zinc-900 tabular-nums">
+                                      ${job.totalPrice.toLocaleString()} COP
+                                    </div>
+                                    <div className="text-[10px] mt-0.2">
+                                      {isDelivered ? (
+                                        <span className="text-emerald-700 font-semibold">Entregado</span>
+                                      ) : jobDebt <= 0 ? (
+                                        <span className="text-emerald-700 font-semibold">Pagado</span>
+                                      ) : (
+                                        <span className="text-amber-800 font-bold font-mono tabular-nums">
+                                          Debe ${jobDebt.toLocaleString()}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Direct Actions: Abonar & Editar */}
+                                  <div className="flex items-center gap-1">
+                                    {jobDebt > 0 && (
+                                      <button
+                                        type="button"
+                                        onClick={() => setSelectedJobForPayment(job)}
+                                        className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/60 transition-colors cursor-pointer"
+                                        title="Registrar abono a este trabajo"
+                                      >
+                                        <CreditCard className="w-3 h-3 text-emerald-700" />
+                                        <span>Abonar</span>
+                                      </button>
+                                    )}
+
+                                    <button
+                                      type="button"
+                                      onClick={() => setSelectedJobForEdit(job)}
+                                      className="p-1 rounded-md text-zinc-400 hover:text-zinc-800 hover:bg-zinc-100 transition-colors"
+                                      title="Editar este encargo"
+                                      aria-label="Editar encargo"
+                                    >
+                                      <Pencil className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </motion.div>
@@ -243,6 +407,26 @@ export function ClientsView() {
           </div>
         )}
       </div>
+
+      {/* Direct Client Creation Modal */}
+      <CreateClientModal
+        isOpen={isCreateClientOpen}
+        onClose={() => setIsCreateClientOpen(false)}
+      />
+
+      {/* Partial Payment Modal */}
+      <PartialPaymentModal
+        job={selectedJobForPayment}
+        isOpen={Boolean(selectedJobForPayment)}
+        onClose={() => setSelectedJobForPayment(null)}
+      />
+
+      {/* Edit Job Modal */}
+      <EditJobModal
+        job={selectedJobForEdit}
+        isOpen={Boolean(selectedJobForEdit)}
+        onClose={() => setSelectedJobForEdit(null)}
+      />
     </div>
   );
 }

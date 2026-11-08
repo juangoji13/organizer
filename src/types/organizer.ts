@@ -56,3 +56,12 @@ export interface PersonalGoal {
   targetAmount?: number;
   isDone?: boolean;
 }
+
+export interface ToastNotification {
+  id: string;
+  message: string;
+  type?: 'success' | 'info' | 'warning' | 'error';
+  undoLabel?: string;
+  onUndo?: () => Promise<void> | void;
+  durationMs?: number;
+}
