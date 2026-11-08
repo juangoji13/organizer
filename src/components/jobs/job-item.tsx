@@ -10,10 +10,14 @@ import {
   ChevronDown, 
   ChevronUp, 
   Clock, 
-  CheckCircle2
+  CheckCircle2, 
+  User, 
+  Eye, 
+  EyeOff,
+  KeyRound,
+  CreditCard
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { spring } from '@animate-ui/react/utils/motion';
 
 interface JobItemProps {
   job: ClientJob;
@@ -22,217 +26,321 @@ interface JobItemProps {
 export function JobItem({ job }: JobItemProps) {
   const { toggleDeliverable, markJobDelivered, markJobPaid } = useWorkspace();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
-  const [dragOffset, setDragOffset] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
+  const [copiedField, setCopiedField] = useState<'user' | 'pass' | null>(null);
+  const [swipeOffset, setSwipeOffset] = useState(0);
 
-  const completedCount = job.deliverables.filter((d) => d.isCompleted).length;
+  const completedList = job.deliverables.filter((d) => d.isCompleted);
+  const pendingList = job.deliverables.filter((d) => !d.isCompleted);
   const totalCount = job.deliverables.length;
-  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const progressPercent = totalCount > 0 ? Math.round((completedList.length / totalCount) * 100) : 0;
+  
+  const isDelivered = job.status === 'delivered';
+  const isFullyPaid = job.paidAmount >= job.totalPrice;
+  const pendingDebt = job.totalPrice - job.paidAmount;
 
-  const copyToClipboard = (text: string, key: string) => {
+  const copyField = (text: string, field: 'user' | 'pass') => {
     navigator.clipboard.writeText(text);
-    setCopiedKey(key);
-    setTimeout(() => setCopiedKey(null), 1800);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 1800);
   };
 
   const openWhatsApp = () => {
     const cleanPhone = job.clientPhone.replace(/\D/g, '');
-    window.open(`https://wa.me/${cleanPhone}`, '_blank');
+    const message = encodeURIComponent(
+      `Hola ${job.clientName}, te escribo respecto al trabajo "${job.title}".`
+    );
+    window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
   };
 
-  const isDelivered = job.status === 'delivered';
-  const isFullyPaid = job.paidAmount >= job.totalPrice;
-
   return (
-    <div className="relative overflow-hidden rounded-xl border border-zinc-200/90 bg-white transition-all shadow-xs hover:border-zinc-300">
-      {/* Background action hints when swiping */}
-      <div className="absolute inset-0 flex items-center justify-between px-6 pointer-events-none select-none">
-        <div className={`flex items-center gap-2 text-xs font-medium text-emerald-700 transition-opacity ${dragOffset > 30 ? 'opacity-100' : 'opacity-0'}`}>
-          <CheckCircle2 className="w-4 h-4" />
+    <div className="relative overflow-hidden rounded-xl border border-zinc-200/85 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.02)] hover:border-zinc-300 transition-colors select-none">
+      {/* Background Swipe Feedback Indicators */}
+      <div 
+        aria-hidden="true" 
+        className="absolute inset-0 flex items-center justify-between px-5 pointer-events-none"
+      >
+        <div 
+          className={`flex items-center gap-1.5 text-xs font-semibold text-emerald-800 transition-all ${
+            swipeOffset > 40 ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-3'
+          }`}
+        >
+          <CheckCircle2 className="w-4 h-4 text-emerald-700" />
           <span>Marcar Entregado</span>
         </div>
-        <div className={`flex items-center gap-2 text-xs font-medium text-blue-700 transition-opacity ${dragOffset < -30 ? 'opacity-100' : 'opacity-0'}`}>
+
+        <div 
+          className={`flex items-center gap-1.5 text-xs font-semibold text-amber-800 transition-all ${
+            swipeOffset < -40 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-3'
+          }`}
+        >
           <span>Marcar Pagado</span>
-          <Check className="w-4 h-4" />
+          <CreditCard className="w-4 h-4 text-amber-700" />
         </div>
       </div>
 
-      {/* Swipeable Main Card Container */}
+      {/* Swipeable Main Card */}
       <motion.div
         drag="x"
+        dragDirectionLock
         dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.25}
-        onDrag={(_, info) => setDragOffset(info.offset.x)}
+        dragElastic={0.2}
+        onDrag={(_, info) => setSwipeOffset(info.offset.x)}
         onDragEnd={(_, info) => {
-          if (info.offset.x > 90) {
+          if (info.offset.x > 85) {
             markJobDelivered(job.id);
-          } else if (info.offset.x < -90) {
+          } else if (info.offset.x < -85) {
             markJobPaid(job.id);
           }
-          setDragOffset(0);
+          setSwipeOffset(0);
         }}
         className="relative bg-white z-10 p-4 sm:p-5"
       >
-        {/* Top Meta Line: Client, Subject, Deadline & WhatsApp */}
-        <div className="flex items-start justify-between gap-3 mb-2.5">
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                {job.subject}
+        {/* Tier 1: Subject (Architectural Tag) & Financial Status */}
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-[11px] font-semibold tracking-wider uppercase text-zinc-500 font-mono">
+              {job.subject}
+            </span>
+            {isDelivered && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold text-emerald-800 bg-emerald-50/70 border border-emerald-200/40">
+                <Check className="w-3 h-3 text-emerald-700" />
+                Entregado
               </span>
-              <span className="text-zinc-300">•</span>
-              <h3 className="text-sm font-semibold text-zinc-900">
-                {job.clientName}
-              </h3>
-            </div>
-            <h4 className="text-sm text-zinc-700 font-medium mt-0.5">
-              {job.title}
-            </h4>
+            )}
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            {/* Direct WhatsApp Button with Press Animation */}
-            <motion.button
-              whileTap={{ scale: 0.92 }}
-              transition={spring.press}
-              onClick={openWhatsApp}
-              className="p-1.5 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors border border-emerald-200/60"
-              title={`Abrir WhatsApp con ${job.clientName}`}
-              aria-label="Abrir WhatsApp"
-            >
-              <MessageCircle className="w-4 h-4" />
-            </motion.button>
-
-            {/* Price Pill */}
-            <div className="text-right">
-              <div className="text-xs font-medium text-zinc-900">
-                ${job.totalPrice.toLocaleString()} {job.currency}
-              </div>
-              <div className="text-[11px] text-zinc-400">
-                {isFullyPaid ? (
-                  <span className="text-emerald-600 font-medium">Pagado</span>
-                ) : (
-                  <span>Debe ${(job.totalPrice - job.paidAmount).toLocaleString()}</span>
-                )}
-              </div>
-            </div>
+          {/* Pricing & Subtle Debt Badge */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className="text-xs font-semibold text-zinc-900">
+              ${job.totalPrice.toLocaleString()} {job.currency}
+            </span>
+            {!isFullyPaid ? (
+              <span className="px-2 py-0.5 rounded text-[11px] font-medium text-amber-900 bg-amber-50/80 border border-amber-200/50">
+                Debe ${pendingDebt.toLocaleString()}
+              </span>
+            ) : (
+              <span className="px-2 py-0.5 rounded text-[11px] font-medium text-emerald-800 bg-emerald-50/70 border border-emerald-200/40">
+                Pagado
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Deadline Badge */}
-        <div className="flex items-center gap-2 mb-3.5">
-          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-600 border border-zinc-200/50">
-            <Clock className="w-3.5 h-3.5 text-zinc-400" />
-            <span>Límite: {job.deadlineTime}</span>
-          </div>
+        {/* Tier 2: Job Title (Crisp Editorial Hierarchy) */}
+        <h3 className="text-sm sm:text-[15px] font-semibold text-zinc-900 tracking-tight leading-snug mb-3">
+          {job.title}
+        </h3>
 
-          {isDelivered && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-              <Check className="w-3 h-3" />
-              Entregado
+        {/* Tier 3: Client & WhatsApp Action + Deadline */}
+        <div className="flex items-center justify-between gap-3 pt-2 pb-3 border-t border-zinc-100 text-xs">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="font-semibold text-zinc-800 truncate">
+              {job.clientName}
             </span>
-          )}
-        </div>
-
-        {/* Credentials Bar (100% visible on one clean horizontal row) */}
-        <div className="p-2.5 rounded-lg bg-zinc-50 border border-zinc-200/70 mb-3 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <div className="flex items-center gap-3 flex-wrap font-mono text-[11px] text-zinc-700">
-            <span className="text-zinc-400 font-sans font-medium text-[10px] uppercase tracking-wider">
-              {job.platform}
-            </span>
-            <span className="text-zinc-300">|</span>
-            <span>
-              <span className="text-zinc-400 select-none">usr:</span> {job.platformUser}
-            </span>
-            <span className="text-zinc-300">|</span>
-            <span>
-              <span className="text-zinc-400 select-none">pwd:</span> {job.platformPass}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-1">
             <motion.button
               whileTap={{ scale: 0.94 }}
-              transition={spring.press}
-              onClick={() => copyToClipboard(`${job.platformUser} | ${job.platformPass}`, `creds-${job.id}`)}
-              className="px-2 py-1 rounded text-[11px] font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200/60 transition-colors inline-flex items-center gap-1"
-              title="Copiar credenciales"
+              onClick={openWhatsApp}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-emerald-800 bg-emerald-50/70 hover:bg-emerald-100/70 border border-emerald-200/50 text-[11px] font-medium transition-colors min-h-[36px]"
+              title={`Chatear con ${job.clientName}`}
+              aria-label={`Abrir chat de WhatsApp con ${job.clientName}`}
             >
-              {copiedKey === `creds-${job.id}` ? (
-                <>
-                  <Check className="w-3 h-3 text-emerald-600" />
-                  <span className="text-emerald-600">Copiado</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="w-3 h-3 text-zinc-400" />
-                  <span>Copiar</span>
-                </>
-              )}
+              <MessageCircle className="w-3.5 h-3.5 text-emerald-700" />
+              <span className="hidden xs:inline">WhatsApp</span>
             </motion.button>
+          </div>
+
+          <div className="flex items-center gap-1.5 text-zinc-500 text-[11px] font-medium shrink-0">
+            <Clock className="w-3.5 h-3.5 text-zinc-400" />
+            <span>Límite: <strong className="text-zinc-800 font-semibold">{job.deadlineTime}</strong></span>
           </div>
         </div>
 
-        {/* Progress Summary and Collapsible Toggle */}
-        <div className="pt-1">
-          <div className="flex items-center justify-between text-xs text-zinc-500 mb-1.5">
-            <span className="font-medium">
-              {completedCount} de {totalCount} entregables completados ({progressPercent}%)
-            </span>
-            <motion.button
-              whileTap={{ scale: 0.96 }}
-              transition={spring.press}
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="inline-flex items-center gap-1 text-xs font-medium text-zinc-600 hover:text-zinc-900 transition-colors py-0.5"
-            >
-              <span>{isExpanded ? 'Ocultar lista' : 'Ver entregables'}</span>
-              {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            </motion.button>
+        {/* Tier 4: Credentials Widget (1-Tap Discrete Copy) */}
+        <div className="mt-1 p-2.5 sm:p-3 rounded-lg bg-zinc-50/80 border border-zinc-200/70">
+          <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-zinc-500 mb-2 px-0.5">
+            <div className="flex items-center gap-1.5">
+              <KeyRound className="w-3 h-3 text-zinc-400" />
+              <span>{job.platform}</span>
+            </div>
+            <span className="text-zinc-400 font-normal lowercase">1 toque para copiar</span>
           </div>
 
-          {/* Micro Progress Bar */}
-          <div className="w-full h-1.5 bg-zinc-100 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-zinc-800 rounded-full"
-              initial={{ width: 0 }}
-              animate={{ width: `${progressPercent}%` }}
-              transition={spring.progress}
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            {/* User Copy Tile */}
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.98 }}
+              onClick={() => copyField(job.platformUser, 'user')}
+              className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-white border border-zinc-200/80 hover:border-zinc-300 text-left transition-colors min-h-[42px]"
+              title="Copiar usuario"
+            >
+              <div className="flex items-center gap-2 truncate">
+                <User className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                <span className="font-mono text-zinc-800 text-[11px] truncate">
+                  {job.platformUser}
+                </span>
+              </div>
+              {copiedField === 'user' ? (
+                <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-700 shrink-0">
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Copiado</span>
+                </span>
+              ) : (
+                <Copy className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+              )}
+            </motion.button>
+
+            {/* Password Tile with Isolated Eye Toggle */}
+            <div className="flex items-center gap-1.5">
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.98 }}
+                onClick={() => copyField(job.platformPass, 'pass')}
+                className="flex-1 flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-white border border-zinc-200/80 hover:border-zinc-300 text-left transition-colors min-h-[42px]"
+                title="Copiar contraseña"
+              >
+                <div className="flex items-center gap-2 truncate">
+                  <span className="font-mono text-zinc-800 text-[11px]">
+                    {showPassword ? job.platformPass : '••••••••'}
+                  </span>
+                </div>
+                {copiedField === 'pass' ? (
+                  <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-700 shrink-0">
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Copiada</span>
+                  </span>
+                ) : (
+                  <Copy className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                )}
+              </motion.button>
+
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="p-2.5 rounded-lg bg-white border border-zinc-200/80 text-zinc-500 hover:text-zinc-900 min-h-[42px] min-w-[42px] flex items-center justify-center transition-colors"
+                title={showPassword ? 'Ocultar' : 'Mostrar'}
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
+        </div>
+
+        {/* Tier 5: Segmented Deliverables Tracker */}
+        <div className="mt-3">
+          <div className="flex items-center justify-between text-xs mb-1.5">
+            <span className="font-medium text-zinc-600">
+              {completedList.length} de {totalCount} listos ({progressPercent}%)
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="inline-flex items-center gap-1 font-semibold text-zinc-800 hover:text-zinc-950 py-1 px-2 rounded-md hover:bg-zinc-100 transition-colors min-h-[34px]"
+            >
+              <span className="text-[11px]">{isExpanded ? 'Ocultar detalle' : 'Ver entregables'}</span>
+              {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+
+          {/* Clean Segmented Bar (One dash per deliverable) */}
+          <div className="flex items-center gap-1 w-full h-1.5">
+            {job.deliverables.map((item, idx) => (
+              <div
+                key={item.id || idx}
+                className={`flex-1 h-full rounded-full transition-colors ${
+                  item.isCompleted ? 'bg-zinc-900' : 'bg-zinc-200'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Tier 6: Discrete Mobile One-Tap Quick Actions */}
+        <div className="mt-3 pt-2.5 border-t border-zinc-100 flex items-center justify-end gap-2 text-xs">
+          {!isDelivered && (
+            <button
+              type="button"
+              onClick={() => markJobDelivered(job.id)}
+              className="px-2.5 py-1.5 rounded-lg text-emerald-800 bg-emerald-50/70 hover:bg-emerald-100/70 border border-emerald-200/50 text-[11px] font-medium transition-colors"
+            >
+              Marcar Entregado
+            </button>
+          )}
+          {!isFullyPaid && (
+            <button
+              type="button"
+              onClick={() => markJobPaid(job.id)}
+              className="px-2.5 py-1.5 rounded-lg text-amber-900 bg-amber-50/80 hover:bg-amber-100/80 border border-amber-200/50 text-[11px] font-medium transition-colors"
+            >
+              Marcar Pagado
+            </button>
+          )}
         </div>
       </motion.div>
 
-      {/* Expandable Deliverables Checklist with Animate UI spring.height */}
+      {/* Accordion: Categorized Checklist */}
       <AnimatePresence>
         {isExpanded && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={spring.height}
-            className="border-t border-zinc-100 bg-zinc-50/70 px-4 sm:px-5 py-3 overflow-hidden"
+            transition={{ duration: 0.2 }}
+            className="border-t border-zinc-100 bg-zinc-50/60 p-4 max-h-72 overflow-y-auto"
           >
-            <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-              Lista de Asignaciones y Tests
+            {/* Pending Deliverables */}
+            <div className="mb-3">
+              <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider block mb-2">
+                Por Entregar ({pendingList.length})
+              </span>
+              <div className="space-y-1.5">
+                {pendingList.map((item) => (
+                  <label
+                    key={item.id}
+                    className="flex items-center gap-3 p-2.5 rounded-lg bg-white border border-zinc-200/60 hover:border-zinc-300 cursor-pointer min-h-[44px] transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={item.isCompleted}
+                      onChange={() => toggleDeliverable(job.id, item.id)}
+                      className="w-4 h-4 rounded border-zinc-300 text-zinc-900 focus:ring-0 accent-zinc-900 cursor-pointer shrink-0"
+                    />
+                    <span className="text-xs font-medium text-zinc-800 leading-snug">
+                      {item.title}
+                    </span>
+                  </label>
+                ))}
+              </div>
             </div>
-            <div className="space-y-1.5">
-              {job.deliverables.map((item) => (
-                <label
-                  key={item.id}
-                  className="flex items-center gap-2.5 py-1 px-2 rounded-md hover:bg-white transition-colors cursor-pointer text-xs text-zinc-700"
-                >
-                  <input
-                    type="checkbox"
-                    checked={item.isCompleted}
-                    onChange={() => toggleDeliverable(job.id, item.id)}
-                    className="w-4 h-4 rounded border-zinc-300 text-zinc-900 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-zinc-900"
-                  />
-                  <span className={item.isCompleted ? 'line-through text-zinc-400' : 'text-zinc-800'}>
-                    {item.title}
-                  </span>
-                </label>
-              ))}
-            </div>
+
+            {/* Completed Deliverables */}
+            {completedList.length > 0 && (
+              <div className="pt-2 border-t border-zinc-200/50">
+                <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider block mb-1.5">
+                  Completadas ({completedList.length})
+                </span>
+                <div className="space-y-1">
+                  {completedList.map((item) => (
+                    <label
+                      key={item.id}
+                      className="flex items-center gap-3 py-1.5 px-2 rounded-md hover:bg-zinc-100/50 cursor-pointer min-h-[36px]"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={item.isCompleted}
+                        onChange={() => toggleDeliverable(job.id, item.id)}
+                        className="w-4 h-4 rounded border-zinc-300 text-zinc-400 accent-zinc-900 cursor-pointer shrink-0"
+                      />
+                      <span className="text-xs text-zinc-400 line-through truncate">
+                        {item.title}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

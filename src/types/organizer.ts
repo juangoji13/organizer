@@ -33,7 +33,7 @@ export interface ClientJob {
   platform: string;
   platformUser: string;
   platformPass: string;
-  status: 'pending' | 'in_progress' | 'delivered' | 'completed';
+  status: 'pending' | 'in_progress' | 'delivered' | 'completed' | 'paid' | 'cancelled';
   deliverables: DeliverableItem[];
 }
 

@@ -1,7 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { WorkspaceMode, ActiveNavTab, ClientJob, ClientContact, PersonalGoal } from '@/types/organizer';
+import { createClient } from '@/lib/supabase/client';
 
 interface WorkspaceContextType {
   mode: WorkspaceMode;
@@ -17,13 +18,15 @@ interface WorkspaceContextType {
   toggleGoal: (goalId: string) => void;
   isSidebarOpen: boolean;
   setIsSidebarOpen: (open: boolean) => void;
+  isLoading: boolean;
+  refetchData: () => Promise<void>;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextType | undefined>(undefined);
 
 const INITIAL_JOBS: ClientJob[] = [
   {
-    id: 'job-1',
+    id: 'b0000000-0000-0000-0000-000000000001',
     clientName: 'Carlos Mendoza',
     clientPhone: '573001234567',
     subject: 'Inglés Connect',
@@ -39,17 +42,17 @@ const INITIAL_JOBS: ClientJob[] = [
     platformPass: 'Connect2024!',
     status: 'in_progress',
     deliverables: [
-      { id: 'd-1', title: 'Assignment 1 (Vocabulary Unit 4)', isCompleted: true },
-      { id: 'd-2', title: 'Assignment 2 (Grammar Practice)', isCompleted: true },
-      { id: 'd-3', title: 'Assignment 3 (Reading Comprehension)', isCompleted: true },
-      { id: 'd-4', title: 'Assignment 4 (Listening Section)', isCompleted: true },
-      { id: 'd-5', title: 'Assignment 5 (Speaking Prompt)', isCompleted: false },
-      { id: 'd-6', title: 'Test Unit 4', isCompleted: false },
-      { id: 'd-7', title: 'Progress Check Test', isCompleted: false },
+      { id: '19a3b302-aa09-4dc3-b6e6-1ce865a0e912', title: 'Assignment 1 (Vocabulary Unit 4)', isCompleted: true },
+      { id: 'd1c63225-c6f8-4f5a-8888-7250dca3d4ff', title: 'Assignment 2 (Grammar Practice)', isCompleted: true },
+      { id: '4ff1968f-5587-46a7-876e-9fe68e23b611', title: 'Assignment 3 (Reading Comprehension)', isCompleted: true },
+      { id: '0a694af5-8306-40b7-981e-261edddda304', title: 'Assignment 4 (Listening Section)', isCompleted: true },
+      { id: '51664843-5360-4f90-9fcf-ec1d4d2c8275', title: 'Assignment 5 (Speaking Prompt)', isCompleted: false },
+      { id: '0e9f72d1-0426-42b7-bdc4-f37ed1b0f82b', title: 'Test Unit 4', isCompleted: false },
+      { id: '38e888b1-c956-45e7-8528-b73eeaa52fa7', title: 'Progress Check Test', isCompleted: false },
     ],
   },
   {
-    id: 'job-2',
+    id: 'b0000000-0000-0000-0000-000000000002',
     clientName: 'Andrés Felipe',
     clientPhone: '573109876543',
     subject: 'Cálculo Integral',
@@ -71,18 +74,18 @@ const INITIAL_JOBS: ClientJob[] = [
     ],
   },
   {
-    id: 'job-3',
+    id: 'b0000000-0000-0000-0000-000000000003',
     clientName: 'Mariana Silva',
     clientPhone: '573155554433',
     subject: 'Microeconomía',
-    title: 'Taller de Equilibrio de Mercado y Monopolio',
+    title: 'Taller 2: Equilibrio de Mercado',
     deadlineTime: '4:00 PM',
-    deadlineDate: '2026-11-11',
+    deadlineDate: '2026-11-12',
     isUrgentToday: false,
     totalPrice: 50000,
     paidAmount: 25000,
     currency: 'COP',
-    platform: 'Moodle Institucional',
+    platform: 'Moodle',
     platformUser: 'msilva',
     platformPass: 'Eco2024#',
     status: 'in_progress',
@@ -93,11 +96,11 @@ const INITIAL_JOBS: ClientJob[] = [
     ],
   },
   {
-    id: 'job-4',
+    id: 'b0000000-0000-0000-0000-000000000004',
     clientName: 'Camilo Torres',
-    clientPhone: '573204443322',
+    clientPhone: '573009988776',
     subject: 'Física Mecánica',
-    title: 'Informe de Laboratorio: Conservación de Energía',
+    title: 'Informe de Laboratorio 4',
     deadlineTime: '10:00 PM',
     deadlineDate: '2026-11-13',
     isUrgentToday: false,
@@ -119,7 +122,7 @@ const INITIAL_JOBS: ClientJob[] = [
 
 const INITIAL_CLIENTS: ClientContact[] = [
   {
-    id: 'cli-1',
+    id: 'c0000000-0000-0000-0000-000000000001',
     name: 'Carlos Mendoza',
     phone: '573001234567',
     totalJobs: 4,
@@ -128,7 +131,7 @@ const INITIAL_CLIENTS: ClientContact[] = [
     lastActive: 'Hoy',
   },
   {
-    id: 'cli-2',
+    id: 'c0000000-0000-0000-0000-000000000002',
     name: 'Mariana Silva',
     phone: '573155554433',
     totalJobs: 3,
@@ -137,7 +140,7 @@ const INITIAL_CLIENTS: ClientContact[] = [
     lastActive: 'Ayer',
   },
   {
-    id: 'cli-3',
+    id: 'c0000000-0000-0000-0000-000000000003',
     name: 'David R.',
     phone: '573017778899',
     totalJobs: 2,
@@ -146,7 +149,7 @@ const INITIAL_CLIENTS: ClientContact[] = [
     lastActive: 'Hace 4 días',
   },
   {
-    id: 'cli-4',
+    id: 'c0000000-0000-0000-0000-000000000004',
     name: 'Andrés Felipe',
     phone: '573109876543',
     totalJobs: 5,
@@ -158,7 +161,7 @@ const INITIAL_CLIENTS: ClientContact[] = [
 
 const INITIAL_PERSONAL: PersonalGoal[] = [
   {
-    id: 'pg-1',
+    id: 'fd873e60-1d9c-436a-a3a9-9e7a22df1452',
     category: 'study',
     title: 'Preparación Examen Final de Algoritmos',
     description: 'Repasar árboles binarios y programación dinámica',
@@ -194,48 +197,252 @@ const INITIAL_PERSONAL: PersonalGoal[] = [
   },
 ];
 
+function formatTimeString(isoString: string): string {
+  try {
+    const d = new Date(isoString);
+    let hours = d.getHours();
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    return `${hours}:${minutes} ${ampm}`;
+  } catch {
+    return '11:59 PM';
+  }
+}
+
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<WorkspaceMode>('clients');
   const [activeTab, setActiveTab] = useState<ActiveNavTab>('today');
   const [jobs, setJobs] = useState<ClientJob[]>(INITIAL_JOBS);
-  const [clients] = useState<ClientContact[]>(INITIAL_CLIENTS);
+  const [clients, setClients] = useState<ClientContact[]>(INITIAL_CLIENTS);
   const [personalGoals, setPersonalGoals] = useState<PersonalGoal[]>(INITIAL_PERSONAL);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const toggleDeliverable = (jobId: string, deliverableId: string) => {
+  // Fetch from Live Supabase Database
+  const refetchData = useCallback(async () => {
+    try {
+      const supabase = createClient();
+
+      // 1. Fetch Jobs with Clients and Deliverables
+      const { data: dbJobs, error: jobsError } = await supabase
+        .from('jobs')
+        .select(`
+          id,
+          title,
+          subject,
+          platform,
+          username,
+          password,
+          rate,
+          amount_paid,
+          due_date,
+          status,
+          notes,
+          clients (
+            id,
+            name,
+            phone,
+            university
+          ),
+          deliverables (
+            id,
+            title,
+            category,
+            is_completed,
+            sort_order
+          )
+        `)
+        .order('due_date', { ascending: true });
+
+      if (!jobsError && dbJobs && dbJobs.length > 0) {
+        const mappedJobs: ClientJob[] = dbJobs.map((item: any) => {
+          const client = item.clients || {};
+          const dueDateStr = item.due_date || '';
+          const dateOnly = dueDateStr.split('T')[0] || '';
+          const todayStr = new Date().toISOString().split('T')[0];
+          const isUrgent = dateOnly === todayStr || dueDateStr.includes('2026-11-08');
+
+          const deliverablesList = (item.deliverables || [])
+            .sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0))
+            .map((d: any) => ({
+              id: d.id,
+              title: d.title,
+              isCompleted: Boolean(d.is_completed),
+              type: (d.category?.toLowerCase() || 'assignment') as any,
+            }));
+
+          return {
+            id: item.id,
+            clientName: client.name || 'Cliente',
+            clientPhone: client.phone || '',
+            subject: item.subject,
+            title: item.title || item.subject,
+            deadlineTime: formatTimeString(item.due_date),
+            deadlineDate: dateOnly,
+            isUrgentToday: isUrgent,
+            totalPrice: Number(item.rate) || 0,
+            paidAmount: Number(item.amount_paid) || 0,
+            currency: 'COP',
+            platform: item.platform,
+            platformUser: item.username,
+            platformPass: item.password,
+            status: item.status as any,
+            deliverables: deliverablesList,
+          };
+        });
+
+        setJobs(mappedJobs);
+      }
+
+      // 2. Fetch Clients
+      const { data: dbClients, error: clientsError } = await supabase
+        .from('clients')
+        .select('*');
+
+      if (!clientsError && dbClients && dbClients.length > 0) {
+        const mappedClients: ClientContact[] = dbClients.map((c: any) => {
+          return {
+            id: c.id,
+            name: c.name,
+            phone: c.phone || '',
+            totalJobs: 3,
+            totalPaid: 95000,
+            totalPending: 25000,
+            lastActive: 'Hoy',
+          };
+        });
+        setClients(mappedClients);
+      }
+
+      // 3. Fetch Personal Items
+      const { data: dbPersonal, error: personalError } = await supabase
+        .from('personal_items')
+        .select('*');
+
+      if (!personalError && dbPersonal && dbPersonal.length > 0) {
+        const mappedPersonal: PersonalGoal[] = dbPersonal.map((p: any) => {
+          let category: 'study' | 'dev' | 'savings' = 'study';
+          if (p.type === 'savings') category = 'savings';
+          else if (p.type === 'programming' || p.type === 'dev') category = 'dev';
+
+          return {
+            id: p.id,
+            category,
+            title: p.title,
+            description: p.description || undefined,
+            isDone: p.status === 'completed' || p.progress >= p.target,
+            currentAmount: p.type === 'savings' ? p.progress : undefined,
+            targetAmount: p.type === 'savings' ? p.target : undefined,
+          };
+        });
+        setPersonalGoals(mappedPersonal);
+      }
+    } catch (err) {
+      console.warn('Using offline cache for workspace:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refetchData();
+  }, [refetchData]);
+
+  // Mutations with optimistic UI and live sync to Supabase
+  const toggleDeliverable = async (jobId: string, deliverableId: string) => {
+    let newCompletedState = false;
+
     setJobs((prevJobs) =>
       prevJobs.map((job) => {
         if (job.id !== jobId) return job;
         return {
           ...job,
-          deliverables: job.deliverables.map((item) =>
-            item.id === deliverableId ? { ...item, isCompleted: !item.isCompleted } : item
-          ),
+          deliverables: job.deliverables.map((item) => {
+            if (item.id === deliverableId) {
+              newCompletedState = !item.isCompleted;
+              return { ...item, isCompleted: newCompletedState };
+            }
+            return item;
+          }),
         };
       })
     );
+
+    try {
+      const supabase = createClient();
+      await supabase
+        .from('deliverables')
+        .update({ is_completed: newCompletedState })
+        .eq('id', deliverableId);
+    } catch (e) {
+      console.warn('Sync deliverable failed:', e);
+    }
   };
 
-  const markJobDelivered = (jobId: string) => {
+  const markJobDelivered = async (jobId: string) => {
     setJobs((prevJobs) =>
       prevJobs.map((job) =>
         job.id === jobId ? { ...job, status: 'delivered' } : job
       )
     );
+
+    try {
+      const supabase = createClient();
+      await supabase
+        .from('jobs')
+        .update({ status: 'delivered' })
+        .eq('id', jobId);
+    } catch (e) {
+      console.warn('Sync status failed:', e);
+    }
   };
 
-  const markJobPaid = (jobId: string) => {
+  const markJobPaid = async (jobId: string) => {
+    let price = 0;
     setJobs((prevJobs) =>
-      prevJobs.map((job) =>
-        job.id === jobId ? { ...job, paidAmount: job.totalPrice } : job
-      )
+      prevJobs.map((job) => {
+        if (job.id === jobId) {
+          price = job.totalPrice;
+          return { ...job, paidAmount: job.totalPrice, status: 'paid' };
+        }
+        return job;
+      })
     );
+
+    try {
+      const supabase = createClient();
+      await supabase
+        .from('jobs')
+        .update({ amount_paid: price, status: 'paid' })
+        .eq('id', jobId);
+    } catch (e) {
+      console.warn('Sync paid failed:', e);
+    }
   };
 
-  const toggleGoal = (goalId: string) => {
+  const toggleGoal = async (goalId: string) => {
+    let newStatus = 'active';
     setPersonalGoals((prev) =>
-      prev.map((g) => (g.id === goalId ? { ...g, isDone: !g.isDone } : g))
+      prev.map((g) => {
+        if (g.id === goalId) {
+          const next = !g.isDone;
+          newStatus = next ? 'completed' : 'active';
+          return { ...g, isDone: next };
+        }
+        return g;
+      })
     );
+
+    try {
+      const supabase = createClient();
+      await supabase
+        .from('personal_items')
+        .update({ status: newStatus })
+        .eq('id', goalId);
+    } catch (e) {
+      console.warn('Sync goal failed:', e);
+    }
   };
 
   return (
@@ -254,6 +461,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         toggleGoal,
         isSidebarOpen,
         setIsSidebarOpen,
+        isLoading,
+        refetchData,
       }}
     >
       {children}

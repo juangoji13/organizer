@@ -1,70 +1,137 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useWorkspace } from '@/context/workspace-context';
 import { JobItem } from '@/components/jobs/job-item';
-import { Plus, CheckCircle2, AlertCircle } from 'lucide-react';
+import { CheckCircle2, Clock, DollarSign, Sparkles } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export function TodayView() {
   const { jobs, mode } = useWorkspace();
+  const [filterToday, setFilterToday] = useState<'all' | 'pending'>('all');
 
   const urgentJobs = jobs.filter((j) => j.isUrgentToday);
-  const remainingToday = urgentJobs.filter((j) => j.status !== 'delivered');
+  const pendingUrgent = urgentJobs.filter((j) => j.status !== 'delivered');
+  const completedUrgent = urgentJobs.filter((j) => j.status === 'delivered');
+  
+  // Total money to collect from today's urgent jobs
+  const todayPendingDebt = urgentJobs.reduce(
+    (acc, j) => acc + (j.totalPrice - j.paidAmount),
+    0
+  );
+
+  const displayedJobs = filterToday === 'pending' ? pendingUrgent : urgentJobs;
 
   return (
-    <div className="max-w-3xl mx-auto py-6 sm:py-8 px-4 sm:px-6">
-      {/* Editorial Welcome Header */}
-      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900">
-            {mode === 'clients' ? 'Entregas del Día' : 'Mi Plan de Hoy'}
-          </h1>
-          <p className="text-xs sm:text-sm text-zinc-500 mt-1">
-            {remainingToday.length > 0 ? (
-              <span>
-                Tienes <strong className="text-zinc-900 font-semibold">{remainingToday.length} trabajos</strong> prioritarios con fecha límite hoy.
-              </span>
-            ) : (
-              <span className="text-emerald-700 font-medium flex items-center gap-1.5 mt-0.5">
-                <CheckCircle2 className="w-4 h-4" />
-                Estás al día con las entregas de hoy.
-              </span>
-            )}
-          </p>
+    <div className="max-w-3xl mx-auto py-4 sm:py-7 px-3.5 sm:px-6">
+      {/* Tight, Editorial Mobile Summary Header */}
+      <div className="mb-4 sm:mb-6">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="text-[11px] font-semibold tracking-wider uppercase text-zinc-400 font-mono">
+              Agenda Prioritaria
+            </div>
+            <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-zinc-900 mt-0.5">
+              {mode === 'clients' ? 'Entregas de Hoy' : 'Mi Plan de Hoy'}
+            </h1>
+          </div>
+
+          {/* Quick Filter Pill for Mobile */}
+          <div className="flex items-center p-0.5 bg-zinc-100/90 rounded-lg border border-zinc-200/60 text-[11px] font-medium">
+            <button
+              onClick={() => setFilterToday('all')}
+              className={`px-2.5 py-1 rounded-md transition-colors ${
+                filterToday === 'all'
+                  ? 'bg-white text-zinc-900 shadow-xs font-semibold'
+                  : 'text-zinc-500 hover:text-zinc-800'
+              }`}
+            >
+              Todos ({urgentJobs.length})
+            </button>
+            <button
+              onClick={() => setFilterToday('pending')}
+              className={`px-2.5 py-1 rounded-md transition-colors ${
+                filterToday === 'pending'
+                  ? 'bg-white text-zinc-900 shadow-xs font-semibold'
+                  : 'text-zinc-500 hover:text-zinc-800'
+              }`}
+            >
+              Pendientes ({pendingUrgent.length})
+            </button>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="text-xs px-3 py-1.5 rounded-lg bg-zinc-100 text-zinc-600 border border-zinc-200/60 font-medium">
-            <span>{urgentJobs.length - remainingToday.length} de {urgentJobs.length} completados</span>
+        {/* 3-Column Thumb KPI Strip */}
+        <div className="grid grid-cols-3 gap-2 mt-3.5">
+          {/* Card 1: Pending jobs */}
+          <div className="p-2.5 rounded-xl bg-white border border-zinc-200/80 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-zinc-400 uppercase tracking-tight">
+              <Clock className="w-3 h-3 text-zinc-400" />
+              <span>Por Entregar</span>
+            </div>
+            <div className="text-base sm:text-lg font-bold text-zinc-900 mt-0.5 tracking-tight">
+              {pendingUrgent.length} <span className="text-[10px] font-normal text-zinc-400">trabajos</span>
+            </div>
+          </div>
+
+          {/* Card 2: Completed today */}
+          <div className="p-2.5 rounded-xl bg-white border border-zinc-200/80 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-zinc-400 uppercase tracking-tight">
+              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+              <span>Entregados</span>
+            </div>
+            <div className="text-base sm:text-lg font-bold text-zinc-900 mt-0.5 tracking-tight">
+              {completedUrgent.length} / {urgentJobs.length}
+            </div>
+          </div>
+
+          {/* Card 3: Pending money today */}
+          <div className="p-2.5 rounded-xl bg-white border border-zinc-200/80 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-zinc-400 uppercase tracking-tight">
+              <DollarSign className="w-3 h-3 text-amber-600" />
+              <span>Por Cobrar</span>
+            </div>
+            <div className="text-base sm:text-lg font-bold text-amber-900 mt-0.5 tracking-tight">
+              ${(todayPendingDebt / 1000).toFixed(0)}k <span className="text-[9px] font-normal text-zinc-400">COP</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Swipe Hint (Subtle, professional) */}
-      <div className="mb-4 text-[11px] text-zinc-400 flex items-center justify-between px-1">
-        <span>Desliza a la derecha para marcar como entregado</span>
-        <span className="hidden sm:inline">Desliza a la izquierda para marcar como pagado</span>
+      {/* Discreet Mobile Swipe Tip */}
+      <div className="hidden sm:flex items-center justify-between text-[11px] text-zinc-400 mb-3 px-1">
+        <span>Desliza tarjeta a la derecha para entregar • a la izquierda para cobrar</span>
+        <span>Pulsa en el usuario o clave para copiar en 1 toque</span>
       </div>
 
-      {/* List of Urgent Jobs */}
-      <div className="space-y-3.5">
-        {urgentJobs.map((job) => (
+      {/* Urgent Jobs List */}
+      <div className="space-y-3">
+        {displayedJobs.map((job) => (
           <motion.div
             key={job.id}
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.18 }}
           >
             <JobItem job={job} />
           </motion.div>
         ))}
       </div>
 
-      {urgentJobs.length === 0 && (
-        <div className="text-center py-16 px-4 border border-dashed border-zinc-200 rounded-xl bg-white">
-          <p className="text-sm font-medium text-zinc-700">No hay entregas pendientes para hoy</p>
-          <p className="text-xs text-zinc-400 mt-1">Revisa la pestaña "Todos los Trabajos" para planificar la semana.</p>
+      {/* Empty State */}
+      {displayedJobs.length === 0 && (
+        <div className="text-center py-12 px-4 rounded-xl border border-dashed border-zinc-200 bg-white shadow-xs">
+          <div className="w-9 h-9 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto mb-2.5 border border-emerald-200/50">
+            <CheckCircle2 className="w-4 h-4" />
+          </div>
+          <p className="text-sm font-semibold text-zinc-800">
+            {filterToday === 'pending'
+              ? '¡Todo listo! No tienes tareas pendientes para hoy.'
+              : 'No hay entregas programadas para hoy.'}
+          </p>
+          <p className="text-xs text-zinc-400 mt-1 max-w-xs mx-auto">
+            Puedes consultar "Trabajos" en la barra inferior para ver los siguientes días.
+          </p>
         </div>
       )}
     </div>

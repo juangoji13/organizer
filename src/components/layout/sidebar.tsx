@@ -184,7 +184,7 @@ export function Sidebar() {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={spring.slide}
-              className="fixed top-0 left-0 bottom-0 w-72 max-w-[85vw] bg-white z-50 shadow-xl md:hidden border-r border-zinc-200"
+              className="fixed top-0 left-0 bottom-0 w-72 max-w-[85vw] bg-white z-50 shadow-xl md:hidden border-r border-zinc-200 pt-safe pb-safe"
             >
               <SidebarContent />
             </motion.div>

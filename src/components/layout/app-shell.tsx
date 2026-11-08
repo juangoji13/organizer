@@ -4,6 +4,7 @@ import React from 'react';
 import { WorkspaceProvider, useWorkspace } from '@/context/workspace-context';
 import { Sidebar } from '@/components/layout/sidebar';
 import { TopHeader } from '@/components/layout/top-header';
+import { BottomNav } from '@/components/layout/bottom-nav';
 import { TodayView } from '@/components/views/today-view';
 import { JobsView } from '@/components/views/jobs-view';
 import { FinanceView } from '@/components/views/finance-view';
@@ -37,11 +38,12 @@ function MainContent() {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-w-0 bg-[#fafafa]">
+    <div className="flex-1 flex flex-col min-w-0 bg-[#fafafa] min-h-screen">
       <TopHeader />
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pb-24 md:pb-8">
         {renderActiveView()}
       </main>
+      <BottomNav />
     </div>
   );
 }

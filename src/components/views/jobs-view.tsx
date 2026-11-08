@@ -1,71 +1,106 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useWorkspace } from '@/context/workspace-context';
 import { JobItem } from '@/components/jobs/job-item';
+import { Search, X, SlidersHorizontal } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export function JobsView() {
   const { jobs } = useWorkspace();
   const [filter, setFilter] = useState<'all' | 'in_progress' | 'delivered'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredJobs = jobs.filter((job) => {
-    if (filter === 'all') return true;
-    return job.status === filter;
-  });
+  const filteredJobs = useMemo(() => {
+    return jobs.filter((job) => {
+      // Status filter
+      if (filter !== 'all' && job.status !== filter) return false;
+
+      // Search query filter
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        const matchesTitle = job.title.toLowerCase().includes(query);
+        const matchesClient = job.clientName.toLowerCase().includes(query);
+        const matchesSubject = job.subject.toLowerCase().includes(query);
+        const matchesPlatform = job.platform.toLowerCase().includes(query);
+        return matchesTitle || matchesClient || matchesSubject || matchesPlatform;
+      }
+
+      return true;
+    });
+  }, [jobs, filter, searchQuery]);
 
   return (
-    <div className="max-w-3xl mx-auto py-6 sm:py-8 px-4 sm:px-6">
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900">
-            Todos los Trabajos & Asignaciones
-          </h1>
-          <p className="text-xs sm:text-sm text-zinc-500 mt-1">
-            Listado completo de encargos universitarios activos y entregados.
-          </p>
+    <div className="max-w-3xl mx-auto py-4 sm:py-7 px-3.5 sm:px-6">
+      {/* Editorial Header */}
+      <div className="mb-4 sm:mb-6">
+        <div className="text-[11px] font-semibold tracking-wider uppercase text-zinc-400 font-mono">
+          Asignaciones Académicas
+        </div>
+        <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-zinc-900 mt-0.5">
+          Todos los Trabajos
+        </h1>
+        <p className="text-xs text-zinc-500 mt-1">
+          Supervisión de entregas, credenciales de plataformas universitarias y estado de pago.
+        </p>
+      </div>
+
+      {/* Touch-Friendly Search & Filter Bar */}
+      <div className="space-y-2.5 mb-4">
+        {/* Search Input Box */}
+        <div className="relative flex items-center">
+          <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 pointer-events-none" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Buscar por materia, cliente, plataforma..."
+            className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-white border border-zinc-200/90 text-xs sm:text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-400 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] min-h-[42px]"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 p-1 rounded-md text-zinc-400 hover:text-zinc-700 min-h-[28px] min-w-[28px] flex items-center justify-center"
+              aria-label="Limpiar búsqueda"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
-        {/* Filter Pills */}
-        <div className="flex items-center gap-1.5 p-1 rounded-lg bg-zinc-100/90 border border-zinc-200/60 text-xs">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
-              filter === 'all'
-                ? 'bg-white text-zinc-900 shadow-xs'
-                : 'text-zinc-600 hover:text-zinc-900'
-            }`}
-          >
-            Todos ({jobs.length})
-          </button>
-          <button
-            onClick={() => setFilter('in_progress')}
-            className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
-              filter === 'in_progress'
-                ? 'bg-white text-zinc-900 shadow-xs'
-                : 'text-zinc-600 hover:text-zinc-900'
-            }`}
-          >
-            En Curso ({jobs.filter((j) => j.status === 'in_progress').length})
-          </button>
-          <button
-            onClick={() => setFilter('delivered')}
-            className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
-              filter === 'delivered'
-                ? 'bg-white text-zinc-900 shadow-xs'
-                : 'text-zinc-600 hover:text-zinc-900'
-            }`}
-          >
-            Entregados ({jobs.filter((j) => j.status === 'delivered').length})
-          </button>
+        {/* Filter Pills (Smooth Horizontal Touch Scroll) */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 select-none">
+          {[
+            { id: 'all', label: 'Todos', count: jobs.length },
+            { id: 'in_progress', label: 'En Curso', count: jobs.filter((j) => j.status === 'in_progress').length },
+            { id: 'delivered', label: 'Entregados', count: jobs.filter((j) => j.status === 'delivered').length },
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setFilter(item.id as typeof filter)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 min-h-[36px] flex items-center gap-1.5 ${
+                filter === item.id
+                  ? 'bg-zinc-900 text-white font-semibold shadow-xs'
+                  : 'bg-white border border-zinc-200/80 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50'
+              }`}
+            >
+              <span>{item.label}</span>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                filter === item.id ? 'bg-white/20 text-white' : 'bg-zinc-100 text-zinc-500'
+              }`}>
+                {item.count}
+              </span>
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="space-y-3.5">
+      {/* Jobs List */}
+      <div className="space-y-3">
         {filteredJobs.map((job) => (
           <motion.div
             key={job.id}
-            initial={{ opacity: 0, y: 6 }}
+            initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.18 }}
           >
@@ -73,6 +108,26 @@ export function JobsView() {
           </motion.div>
         ))}
       </div>
+
+      {/* Empty State */}
+      {filteredJobs.length === 0 && (
+        <div className="text-center py-12 px-4 rounded-xl border border-dashed border-zinc-200 bg-white shadow-xs">
+          <p className="text-sm font-semibold text-zinc-800">No se encontraron trabajos</p>
+          <p className="text-xs text-zinc-400 mt-1">
+            {searchQuery
+              ? `No hay coincidencias para "${searchQuery}". Intenta con otro término.`
+              : 'No hay trabajos en este estado actualmente.'}
+          </p>
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="mt-3 px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-800 bg-zinc-100 hover:bg-zinc-200 transition-colors"
+            >
+              Limpiar búsqueda
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

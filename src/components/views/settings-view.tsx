@@ -13,7 +13,7 @@ export function SettingsView() {
   );
 
   return (
-    <div className="max-w-2xl mx-auto py-6 sm:py-8 px-4 sm:px-6">
+    <div className="max-w-2xl mx-auto py-4 sm:py-7 px-3.5 sm:px-6">
       <div className="mb-8">
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900">
           Configuración & Espacio de Trabajo
