@@ -5,9 +5,14 @@ import { WorkspaceMode, ActiveNavTab, ClientJob, ClientContact, PersonalGoal, To
 import { createClient } from '@/lib/supabase/client';
 import { PersonalItemType } from '@/types/database.types';
 
+export type AppTheme = 'light' | 'dark';
+
 interface WorkspaceContextType {
   mode: WorkspaceMode;
   setMode: (mode: WorkspaceMode) => void;
+  theme: 'light' | 'dark';
+  setTheme: (theme: 'light' | 'dark') => void;
+  toggleTheme: () => void;
   activeTab: ActiveNavTab;
   setActiveTab: (tab: ActiveNavTab) => void;
   jobs: ClientJob[];
@@ -250,6 +255,7 @@ export function computeClientMetrics(
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<WorkspaceMode>('clients');
+  const [theme, setThemeState] = useState<'light' | 'dark'>('light');
   const [activeTab, setActiveTab] = useState<ActiveNavTab>('today');
   const [jobs, setJobs] = useState<ClientJob[]>(INITIAL_JOBS);
   const [rawClients, setRawClients] = useState<Array<{ id: string; name: string; phone: string }>>(INITIAL_RAW_CLIENTS);
@@ -258,6 +264,49 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
   const [todayDateStr, setTodayDateStr] = useState<string>('2026-11-08');
+
+  // Load saved theme on mount or check system preference
+  useEffect(() => {
+    try {
+      const savedTheme = localStorage.getItem('organizer_theme') as 'light' | 'dark' | null;
+      if (savedTheme === 'light' || savedTheme === 'dark') {
+        setThemeState(savedTheme);
+        if (savedTheme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } else {
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (prefersDark) {
+          setThemeState('dark');
+          document.documentElement.classList.add('dark');
+        }
+      }
+    } catch {
+      // LocalStorage access restricted in private browsing
+    }
+  }, []);
+
+  const setTheme = useCallback((newTheme: 'light' | 'dark') => {
+    setThemeState(newTheme);
+    try {
+      localStorage.setItem('organizer_theme', newTheme);
+    } catch {
+      // LocalStorage access fallback
+    }
+    if (typeof document !== 'undefined') {
+      if (newTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  }, [theme, setTheme]);
 
   useEffect(() => {
     try {
@@ -1014,6 +1063,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       value={{
         mode,
         setMode,
+        theme,
+        setTheme,
+        toggleTheme,
         activeTab,
         setActiveTab,
         jobs,

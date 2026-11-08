@@ -1,9 +1,18 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --shadow-porcelain: 0 4px 24px rgba(0, 0, 0, 0.06);
+
+  --color-surface-token: var(--surface);
+  --color-surface-subtle-token: var(--surface-subtle);
+  --color-border-token: var(--border);
+  --color-text-primary-token: var(--text-primary);
+  --color-text-secondary-token: var(--text-secondary);
+  --color-text-muted-token: var(--text-muted);
 }
 
 :root {
@@ -22,6 +31,30 @@
   --warning: #d97706;
 }
 
+.dark {
+  --background: #09090b;
+  --foreground: #f4f4f5;
+  --surface: #121215;
+  --surface-subtle: #18181b;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --accent: #f4f4f5;
+  --accent-soft: #18181b;
+  --success: #10b981;
+  --warning: #f59e0b;
+  color-scheme: dark;
+}
+
+/* Pure OLED Black for main background on mobile viewport */
+@media (max-width: 640px) {
+  .dark {
+    --background: #000000;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -36,16 +69,32 @@ body {
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
 }
 
+.dark .shadow-porcelain {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+}
+
 .text-primary-token {
-  color: #09090b;
+  color: var(--text-primary);
 }
 
 .text-secondary-token {
-  color: #52525b;
+  color: var(--text-secondary);
 }
 
 .text-muted-token {
-  color: #71717a;
+  color: var(--text-muted);
+}
+
+.bg-surface-token {
+  background-color: var(--surface);
+}
+
+.bg-surface-subtle-token {
+  background-color: var(--surface-subtle);
+}
+
+.border-token {
+  border-color: var(--border);
 }
 
 /* Safe area support for iOS / Android notch & home bar */
@@ -75,4 +124,11 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #d4d4d8;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #27272a;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
 }

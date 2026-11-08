@@ -424,7 +424,7 @@ export function PersonalView() {
             </div>
 
             {studyGoals.length === 0 ? (
-              <div className="p-5 rounded-2xl bg-white border border-dashed border-zinc-200 text-center">
+              <div className="py-6 px-4 rounded-2xl bg-zinc-50/50 border border-zinc-200/70 text-center">
                 <p className="text-xs text-zinc-500">
                   No tienes entregas ni materias universitarias registradas. Añade talleres, parciales o recordatorios de estudio.
                 </p>
@@ -500,10 +500,18 @@ export function PersonalView() {
             </div>
 
             {notesList.length === 0 ? (
-              <div className="p-5 rounded-2xl bg-white border border-dashed border-zinc-200 text-center">
-                <p className="text-xs text-zinc-500">
-                  No tienes notas rápidas guardadas. Toca en &quot;+ Nueva nota&quot; para apuntar credenciales, links o ideas clave.
+              <div className="py-7 px-4 rounded-2xl bg-zinc-50/60 border border-zinc-200/60 text-center flex flex-col items-center justify-center gap-2.5">
+                <p className="text-xs text-zinc-500 font-normal">
+                  Sin notas rápidas aún <span className="text-zinc-300 mx-1">•</span> Toca &quot;+ Nueva nota&quot; para apuntar recordatorios o credenciales
                 </p>
+                <button
+                  type="button"
+                  onClick={() => handleOpenCreate('note')}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-zinc-200/90 hover:border-zinc-300 text-zinc-700 hover:text-zinc-950 text-xs font-medium shadow-2xs transition-all"
+                >
+                  <FileText className="w-3.5 h-3.5 text-zinc-500" />
+                  <span>+ Nueva nota</span>
+                </button>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -594,7 +602,7 @@ export function PersonalView() {
             </div>
 
             {devGoals.length === 0 ? (
-              <div className="p-5 rounded-2xl bg-white border border-dashed border-zinc-200 text-center">
+              <div className="py-6 px-4 rounded-2xl bg-zinc-50/50 border border-zinc-200/70 text-center">
                 <p className="text-xs text-zinc-500">
                   No tienes proyectos de código activos. Agrega ideas de apps, bots o librerías que quieras programar.
                 </p>
@@ -677,7 +685,7 @@ export function PersonalView() {
             </div>
 
             {savingsGoals.length === 0 ? (
-              <div className="p-5 rounded-2xl bg-white border border-dashed border-zinc-200 text-center">
+              <div className="py-6 px-4 rounded-2xl bg-zinc-50/50 border border-zinc-200/70 text-center">
                 <p className="text-xs text-zinc-500">
                   No tienes planes de ahorro definidos. Agrega metas de ahorro para equipos, viajes o fondos de emergencia.
                 </p>

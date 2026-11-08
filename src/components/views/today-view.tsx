@@ -49,6 +49,9 @@ export function TodayView() {
   const pendingPersonal = personalPriorities.filter((g) => !g.isDone);
   const displayedPersonal = filterToday === 'pending' ? pendingPersonal : personalPriorities;
 
+  const clientCount = filterToday === 'pending' ? pendingUrgent.length : urgentJobs.length;
+  const personalCount = filterToday === 'pending' ? pendingPersonal.length : personalPriorities.length;
+
   return (
     <div className="max-w-3xl mx-auto py-5 sm:py-8 px-3.5 sm:px-6">
       {/* Editorial Header */}
@@ -77,70 +80,66 @@ export function TodayView() {
               </button>
             </div>
           </div>
-
-          {/* Minimalist Status Filter */}
-          <div className="inline-flex items-center p-0.5 bg-zinc-100/90 rounded-lg border border-zinc-200/60 text-xs font-medium self-start sm:self-auto select-none">
-            <button
-              type="button"
-              onClick={() => setFilterToday('all')}
-              className={`px-3 py-1 rounded-md transition-all ${
-                filterToday === 'all'
-                  ? 'bg-white text-zinc-900 shadow-xs font-semibold'
-                  : 'text-zinc-500 hover:text-zinc-800'
-              }`}
-            >
-              Todos
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilterToday('pending')}
-              className={`px-3 py-1 rounded-md transition-all ${
-                filterToday === 'pending'
-                  ? 'bg-white text-zinc-900 shadow-xs font-semibold'
-                  : 'text-zinc-500 hover:text-zinc-800'
-              }`}
-            >
-              Pendientes
-            </button>
-          </div>
         </div>
 
-        {/* Stable View Switcher: Encargos Clientes vs Mis Prioridades */}
-        <div className="mt-4 p-1 bg-zinc-100/80 border border-zinc-200/70 rounded-xl grid grid-cols-2 max-w-sm select-none">
-          <button
-            type="button"
-            onClick={() => setTodaySection('clients')}
-            className={`py-1.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
-              todaySection === 'clients'
-                ? 'bg-white text-zinc-950 shadow-xs'
-                : 'text-zinc-500 hover:text-zinc-900'
-            }`}
-          >
-            <Briefcase className="w-3.5 h-3.5" />
-            <span>Encargos Clientes</span>
-            {pendingUrgent.length > 0 && (
-              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-zinc-900 text-white font-bold">
-                {pendingUrgent.length}
+        {/* Unified Control Bar: Single Segmented Control + Subtle Inline Toggle */}
+        <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          {/* Segmented Control */}
+          <div className="p-1 bg-zinc-100/90 border border-zinc-200/70 rounded-xl grid grid-cols-2 w-full sm:w-auto sm:min-w-[340px] select-none">
+            <button
+              type="button"
+              onClick={() => setTodaySection('clients')}
+              className={`py-1.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
+                todaySection === 'clients'
+                  ? 'bg-white text-zinc-950 shadow-xs'
+                  : 'text-zinc-500 hover:text-zinc-900'
+              }`}
+            >
+              <Briefcase className="w-3.5 h-3.5" />
+              <span>Encargos Clientes</span>
+              <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold ${
+                todaySection === 'clients' ? 'bg-zinc-100 text-zinc-900' : 'bg-zinc-200 text-zinc-600'
+              }`}>
+                {clientCount}
               </span>
-            )}
-          </button>
+            </button>
 
+            <button
+              type="button"
+              onClick={() => setTodaySection('personal')}
+              className={`py-1.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
+                todaySection === 'personal'
+                  ? 'bg-white text-zinc-950 shadow-xs'
+                  : 'text-zinc-500 hover:text-zinc-900'
+              }`}
+            >
+              <GraduationCap className="w-3.5 h-3.5" />
+              <span>Tareas Propias</span>
+              <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold ${
+                todaySection === 'personal' ? 'bg-zinc-100 text-zinc-900' : 'bg-zinc-200 text-zinc-600'
+              }`}>
+                {personalCount}
+              </span>
+            </button>
+          </div>
+
+          {/* Discrete "Solo pendientes" Filter Toggle */}
           <button
             type="button"
-            onClick={() => setTodaySection('personal')}
-            className={`py-1.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
-              todaySection === 'personal'
-                ? 'bg-white text-zinc-950 shadow-xs'
-                : 'text-zinc-500 hover:text-zinc-900'
+            onClick={() => setFilterToday(filterToday === 'pending' ? 'all' : 'pending')}
+            className={`inline-flex items-center gap-2 self-start sm:self-center px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all select-none border ${
+              filterToday === 'pending'
+                ? 'bg-zinc-900 text-white border-zinc-900 shadow-xs'
+                : 'bg-white text-zinc-600 border-zinc-200/80 hover:bg-zinc-50 hover:text-zinc-900'
             }`}
+            title={filterToday === 'pending' ? 'Mostrando solo pendientes. Toca para ver todos' : 'Toca para filtrar solo pendientes'}
           >
-            <GraduationCap className="w-3.5 h-3.5" />
-            <span>Tareas Propias</span>
-            {pendingPersonal.length > 0 && (
-              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-zinc-200 text-zinc-800 font-bold">
-                {pendingPersonal.length}
-              </span>
-            )}
+            <span
+              className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                filterToday === 'pending' ? 'bg-amber-400' : 'bg-zinc-300'
+              }`}
+            />
+            <span>Solo pendientes</span>
           </button>
         </div>
       </div>
@@ -148,17 +147,6 @@ export function TodayView() {
       {/* SECTION 1: ENCARGOS CLIENTES */}
       {todaySection === 'clients' && (
         <>
-          {/* Discreet Mobile Swipe Tip */}
-          <div className="flex items-center justify-between text-[11px] text-zinc-400 mb-3 px-0.5">
-            <span className="flex items-center gap-1.5 flex-wrap">
-              <span>Deslizar:</span>
-              <span className="text-emerald-700 font-medium">derecha ➔ entregar</span>
-              <span className="text-zinc-300">•</span>
-              <span className="text-amber-800 font-medium">izquierda ➔ cobrar</span>
-            </span>
-            <span className="hidden sm:inline text-zinc-400">1 toque para copiar credenciales</span>
-          </div>
-
           {/* Urgent Jobs List */}
           <div className="space-y-3">
             {displayedJobs.map((job) => (
@@ -175,7 +163,7 @@ export function TodayView() {
 
           {/* Empty State */}
           {displayedJobs.length === 0 && (
-            <div className="text-center py-12 px-4 rounded-xl border border-dashed border-zinc-200 bg-white shadow-xs">
+            <div className="text-center py-12 px-4 rounded-2xl border border-zinc-200/80 bg-zinc-50/40 shadow-xs">
               <div className="w-9 h-9 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto mb-2.5 border border-emerald-200/50">
                 <CheckCircle2 className="w-4 h-4" />
               </div>
@@ -185,7 +173,7 @@ export function TodayView() {
                   : 'No hay entregas programadas para hoy.'}
               </p>
               <p className="text-xs text-zinc-500 mt-1 max-w-xs mx-auto">
-                Puedes consultar "Trabajos" en la barra inferior para ver los siguientes días.
+                Puedes consultar &quot;Trabajos&quot; en la barra inferior para ver los siguientes días.
               </p>
             </div>
           )}
@@ -251,7 +239,7 @@ export function TodayView() {
           ))}
 
           {displayedPersonal.length === 0 && (
-            <div className="text-center py-12 px-4 rounded-xl border border-dashed border-zinc-200 bg-white shadow-xs">
+            <div className="text-center py-12 px-4 rounded-2xl border border-zinc-200/80 bg-zinc-50/40 shadow-xs">
               <div className="w-9 h-9 rounded-full bg-zinc-100 text-zinc-700 flex items-center justify-center mx-auto mb-2.5">
                 <Sparkles className="w-4 h-4" />
               </div>

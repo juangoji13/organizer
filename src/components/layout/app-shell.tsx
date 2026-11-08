@@ -46,7 +46,7 @@ function MainContent() {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-w-0 bg-[#fafafa] min-h-screen">
+    <div className="flex-1 flex flex-col min-w-0 bg-[#fafafa] dark:bg-[#09090b] max-sm:dark:bg-black min-h-screen">
       <TopHeader onOpenCreateModal={handleOpenCreateModal} />
       <main className="flex-1 overflow-y-auto pb-32 md:pb-8">
         {renderActiveView()}
@@ -68,7 +68,7 @@ function MainContent() {
 export function AppShell() {
   return (
     <WorkspaceProvider>
-      <div className="flex min-h-screen bg-white">
+      <div className="flex min-h-screen bg-white dark:bg-[#09090b] max-sm:dark:bg-black">
         <Sidebar />
         <MainContent />
       </div>

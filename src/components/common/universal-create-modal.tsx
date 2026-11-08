@@ -18,7 +18,7 @@ import {
   Layers,
   Sparkles,
 } from 'lucide-react';
-import { motion, AnimatePresence, useDragControls } from 'motion/react';
+import { motion, AnimatePresence, useDragControls, type Variants } from 'motion/react';
 
 export interface UniversalCreateModalProps {
   isOpen: boolean;
@@ -38,6 +38,37 @@ const formatLocalDate = (date: Date): string => {
 };
 
 const getTodayStr = () => formatLocalDate(new Date());
+
+// Hub Animation Variants
+const hubContainerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.04,
+      delayChildren: 0.02,
+    },
+  },
+};
+
+const hubItemVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    y: 18,
+    scale: 0.88,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: 'spring',
+      damping: 18,
+      stiffness: 280,
+      mass: 0.8,
+    },
+  },
+};
 
 export function UniversalCreateModal({ isOpen, onClose, initialType }: UniversalCreateModalProps) {
   const { clients, createJob, createPersonalItem } = useWorkspace();
@@ -340,28 +371,28 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
     {
       id: 'job',
       label: 'Trabajo Cliente',
-      desc: 'Encargo de estudiante',
+      desc: 'Talleres & Exámenes',
       icon: Briefcase,
       isDark: true,
     },
     {
       id: 'personal',
       label: 'Materia / Tarea U',
-      desc: 'Universidad o estudio',
+      desc: 'Parciales & Propias',
       icon: GraduationCap,
       isDark: false,
     },
     {
       id: 'savings',
       label: 'Plan de Ahorro',
-      desc: 'Meta financiera',
+      desc: 'Metas de Dinero',
       icon: PiggyBank,
       isDark: false,
     },
     {
       id: 'note',
       label: 'Nota Rápida',
-      desc: 'Apunte o recordatorio',
+      desc: 'Apuntes & Accesos',
       icon: FileText,
       isDark: false,
     },
@@ -394,7 +425,7 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
         {activeMode === 'hub' ? (
           <div className="flex flex-col flex-1 min-h-0">
             {/* Header */}
-            <div className="shrink-0 px-5 pt-3 pb-2 sm:px-6 sm:pt-4 border-b border-zinc-100 bg-white">
+            <div className="shrink-0 px-5 pt-3 pb-3 sm:px-6 sm:pt-4 border-b border-zinc-100 bg-white">
               {/* Mobile Drag Handle */}
               <div
                 onPointerDown={(e) => dragControls.start(e)}
@@ -410,7 +441,7 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
                     Centro de Creación
                   </span>
                   <h2 className="text-lg sm:text-xl font-bold text-zinc-950 tracking-tight">
-                    ¿Qué deseas crear?
+                    ¿Qué deseas registrar?
                   </h2>
                 </div>
                 <button
@@ -423,36 +454,44 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
                 </button>
               </div>
               <p className="text-xs text-zinc-500 mt-0.5">
-                Selecciona una categoría para comenzar
+                Selecciona un modo para comenzar
               </p>
             </div>
 
-            {/* Hub Body: 2x2 Grid with Elegant 64px+ Circles */}
+            {/* Hub Body: 2x2 Grid with Elegant 64px+ Circles & Stagger Spring Animation */}
             <div
               className="flex-1 overflow-y-auto overscroll-contain touch-pan-y p-5 sm:p-7 flex items-center justify-center"
               style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
             >
-              <div className="grid grid-cols-2 gap-3.5 sm:gap-5 w-full max-w-sm sm:max-w-md mx-auto">
+              <motion.div
+                variants={hubContainerVariants}
+                initial="hidden"
+                animate="visible"
+                className="grid grid-cols-2 gap-3.5 sm:gap-5 w-full max-w-sm sm:max-w-md mx-auto"
+              >
                 {MODES.map((mode) => {
                   const Icon = mode.icon;
                   return (
-                    <button
+                    <motion.button
                       key={mode.id}
                       type="button"
+                      variants={hubItemVariants}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.94 }}
                       onClick={() => {
                         setActiveMode(mode.id);
                         setValidationErrors({});
                       }}
-                      className="flex flex-col items-center justify-center p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-zinc-50/70 hover:bg-zinc-100/80 active:scale-95 border border-zinc-200/60 hover:border-zinc-300 hover:shadow-sm transition-all group focus:outline-none focus:ring-2 focus:ring-zinc-900/10 cursor-pointer"
+                      className="flex flex-col items-center justify-center p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-zinc-50/70 hover:bg-zinc-100/80 active:bg-zinc-100 border border-zinc-200/60 hover:border-zinc-300 active:border-zinc-400/80 hover:shadow-sm transition-colors group focus:outline-none focus:ring-2 focus:ring-zinc-900/10 cursor-pointer select-none"
                     >
                       <div
-                        className={`w-16 h-16 sm:w-18 sm:h-18 rounded-full flex items-center justify-center transition-transform group-hover:scale-105 ${
+                        className={`w-16 h-16 sm:w-18 sm:h-18 rounded-full flex items-center justify-center transition-all duration-150 group-hover:scale-105 group-active:scale-95 ${
                           mode.isDark
-                            ? 'bg-zinc-900 text-white shadow-lg shadow-zinc-950/20'
-                            : 'bg-white text-zinc-900 border border-zinc-200/90 shadow-xs group-hover:border-zinc-300'
+                            ? 'bg-zinc-900 text-white shadow-lg shadow-zinc-950/20 group-hover:bg-zinc-800 group-active:ring-4 group-active:ring-zinc-900/25'
+                            : 'bg-white text-zinc-900 border border-zinc-200/90 shadow-xs group-hover:border-zinc-300 group-active:border-zinc-400 group-active:ring-4 group-active:ring-zinc-300/50'
                         }`}
                       >
-                        <Icon className="w-7 h-7 sm:w-8 sm:h-8" />
+                        <Icon className="w-7 h-7 sm:w-8 sm:h-8 transition-transform duration-150 group-active:scale-90" />
                       </div>
                       <span className="mt-3 text-xs sm:text-sm font-bold text-zinc-900 text-center leading-tight">
                         {mode.label}
@@ -460,10 +499,10 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
                       <span className="mt-1 text-[11px] text-zinc-500 text-center font-normal">
                         {mode.desc}
                       </span>
-                    </button>
+                    </motion.button>
                   );
                 })}
-              </div>
+              </motion.div>
             </div>
 
             {/* Hub Footer: Clean & Light Cancel */}

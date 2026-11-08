@@ -2,20 +2,26 @@
 
 import React, { useState, useEffect } from 'react';
 import { useWorkspace } from '@/context/workspace-context';
-import { MessageCircle, CheckCircle2, Target, CreditCard, Pencil, Check, X } from 'lucide-react';
+import { MessageCircle, CheckCircle2, Target, CreditCard, Pencil, Check, X, Copy, Share2 } from 'lucide-react';
 import { PartialPaymentModal } from '@/components/jobs/partial-payment-modal';
+import { WhatsAppSummaryModal } from '@/components/finance/whatsapp-summary-modal';
 import { ClientJob } from '@/types/organizer';
 
 type TimeRange = 'today' | 'week' | 'month' | 'all';
 
 export function FinanceView() {
-  const { clients, jobs } = useWorkspace();
+  const { clients, jobs, showToast } = useWorkspace();
   const [range, setRange] = useState<TimeRange>('week');
   const [weeklyGoal, setWeeklyGoal] = useState<number>(400000); // 400.000 COP meta semanal inicial
   const [isEditingGoal, setIsEditingGoal] = useState<boolean>(false);
   const [goalInput, setGoalInput] = useState<string>('400000');
   const [currentDateStr, setCurrentDateStr] = useState<string>('2026-11-08');
   const [selectedJobForPayment, setSelectedJobForPayment] = useState<ClientJob | null>(null);
+
+  // WhatsApp Summary Generator State
+  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState<boolean>(false);
+  const [generatedSummary, setGeneratedSummary] = useState<string>('');
+  const [hasCopiedInModal, setHasCopiedInModal] = useState<boolean>(false);
 
   useEffect(() => {
     try {
@@ -82,6 +88,154 @@ export function FinanceView() {
       `Hola ${clientName}, ¿cómo estás? Te escribo para recordarte el saldo pendiente de $${debt.toLocaleString()} COP de tus trabajos.`
     );
     window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
+  };
+
+  // Generador de Resumen para WhatsApp (Balance del Día / Semana en 1 Toque)
+  const buildWhatsAppSummary = () => {
+    const rangeLabels: Record<TimeRange, string> = {
+      today: 'Hoy',
+      week: 'Esta Semana',
+      month: 'Este Mes',
+      all: 'Histórico Completo',
+    };
+
+    let formattedDate = currentDateStr;
+    try {
+      const now = new Date();
+      const day = now.getDate();
+      const month = now.toLocaleDateString('es-CO', { month: 'short' }).replace('.', '');
+      const year = now.getFullYear();
+      const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+      formattedDate = `${day} ${cap(month)} ${year}`;
+    } catch {
+      formattedDate = currentDateStr;
+    }
+
+    const periodLabel = rangeLabels[range];
+
+    // Entregados en este período
+    const deliveredInPeriod = filteredJobs.filter(
+      (j) => j.status === 'delivered' || j.status === 'completed'
+    );
+    const deliveredCount = deliveredInPeriod.length;
+    const deliveredCountText = `${deliveredCount} ${deliveredCount === 1 ? 'encargo' : 'encargos'}`;
+
+    // Encargos pendientes por entregar
+    const pendingInPeriod = filteredJobs.filter(
+      (j) => j.status !== 'delivered' && j.status !== 'completed' && j.status !== 'cancelled'
+    );
+    const pendingCount = pendingInPeriod.length;
+    const pendingCountText = `${pendingCount} ${pendingCount === 1 ? 'encargo' : 'encargos'}`;
+
+    // Lista de clientes con deuda pendiente y montos individuales
+    const clientsWithPendingDebt = clients.filter((c) => c.totalPending > 0);
+    const totalStreetDebt = clientsWithPendingDebt.reduce((acc, c) => acc + c.totalPending, 0);
+
+    let clientDebtsText = '';
+    if (clientsWithPendingDebt.length > 0) {
+      clientDebtsText = clientsWithPendingDebt
+        .map((c) => `• ${c.name}: $${c.totalPending.toLocaleString('es-CO')} COP`)
+        .join('\n');
+    } else {
+      clientDebtsText = '• Ninguno (¡Cuentas al día!)';
+    }
+
+    return [
+      `📊 Resumen Organizer - ${formattedDate}`,
+      `🗓 Período: ${periodLabel}`,
+      '',
+      `📦 Entregados en este período: ${deliveredCountText}`,
+      `💵 Total recaudado: $${totalPaid.toLocaleString('es-CO')} COP`,
+      '',
+      `⏳ Encargos pendientes por entregar: ${pendingCountText}`,
+      '',
+      '👥 Clientes con deuda pendiente:',
+      clientDebtsText,
+      '',
+      `🔴 Total saldo por cobrar en la calle: $${totalStreetDebt.toLocaleString('es-CO')} COP`,
+    ].join('\n');
+  };
+
+  const handleShareWhatsAppSummary = async () => {
+    const summary = buildWhatsAppSummary();
+    setGeneratedSummary(summary);
+    setHasCopiedInModal(false);
+
+    let copied = false;
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(summary);
+        copied = true;
+      } catch {
+        copied = false;
+      }
+    }
+
+    if (!copied && typeof document !== 'undefined') {
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = summary;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      } catch {
+        // ignore
+      }
+    }
+
+    showToast({
+      message: 'Resumen copiado para WhatsApp listo para pegar',
+      type: 'success',
+    });
+
+    setIsWhatsAppModalOpen(true);
+  };
+
+  const handleCopyAgain = async () => {
+    const textToCopy = generatedSummary || buildWhatsAppSummary();
+    let copied = false;
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(textToCopy);
+        copied = true;
+      } catch {
+        copied = false;
+      }
+    }
+
+    if (!copied && typeof document !== 'undefined') {
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = textToCopy;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      } catch {
+        // ignore
+      }
+    }
+
+    setHasCopiedInModal(true);
+    showToast({
+      message: 'Resumen copiado para WhatsApp listo para pegar',
+      type: 'success',
+    });
+    setTimeout(() => setHasCopiedInModal(false), 2000);
+  };
+
+  const handleOpenWhatsAppDirectly = () => {
+    const textToOpen = generatedSummary || buildWhatsAppSummary();
+    window.open(`https://wa.me/?text=${encodeURIComponent(textToOpen)}`, '_blank');
   };
 
   const handleSaveGoal = (e: React.FormEvent) => {
@@ -219,24 +373,49 @@ export function FinanceView() {
 
       {/* Balance Contable Tipográfico Refinado (Ingresos del período vs Saldo pendiente) */}
       <div className="rounded-2xl bg-white border border-zinc-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.02)] p-5 sm:p-6 mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 pb-4 mb-5 border-b border-zinc-100">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 font-mono">
-              Balance Contable
-            </span>
-            <span className="text-zinc-300">•</span>
-            <span className="text-xs font-medium text-zinc-600">
-              {range === 'today'
-                ? 'Vista de Hoy'
-                : range === 'week'
-                ? 'Esta Semana'
-                : range === 'month'
-                ? 'Este Mes'
-                : 'Histórico Completo'}
-            </span>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 mb-5 border-b border-zinc-100">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 font-mono">
+                Balance Contable
+              </span>
+              <span className="text-zinc-300">•</span>
+              <span className="text-xs font-medium text-zinc-600">
+                {range === 'today'
+                  ? 'Vista de Hoy'
+                  : range === 'week'
+                  ? 'Esta Semana'
+                  : range === 'month'
+                  ? 'Este Mes'
+                  : 'Histórico Completo'}
+              </span>
+            </div>
+            <div className="text-xs text-zinc-400 font-mono mt-0.5">
+              {filteredJobs.length} {filteredJobs.length === 1 ? 'encargo registrado' : 'encargos registrados'}
+            </div>
           </div>
-          <div className="text-xs text-zinc-400 font-mono">
-            {filteredJobs.length} {filteredJobs.length === 1 ? 'encargo registrado' : 'encargos registrados'}
+
+          {/* Botón Destacado: Compartir Resumen para WhatsApp */}
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={handleShareWhatsAppSummary}
+              className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white shadow-xs hover:shadow transition-all duration-150 cursor-pointer min-h-[38px]"
+              title="Copiar balance al portapapeles y compartir por WhatsApp"
+            >
+              <span className="text-sm">📋</span>
+              <span className="tracking-tight">Compartir Resumen para WhatsApp</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleOpenWhatsAppDirectly}
+              className="inline-flex items-center justify-center p-2 rounded-xl text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/70 text-xs font-semibold min-h-[38px] min-w-[38px] transition-colors cursor-pointer"
+              title="Abrir WhatsApp directamente con el resumen prellenado"
+              aria-label="Abrir WhatsApp directamente con el resumen prellenado"
+            >
+              <MessageCircle className="w-4 h-4 text-emerald-700" />
+            </button>
           </div>
         </div>
 
@@ -417,6 +596,16 @@ export function FinanceView() {
         job={selectedJobForPayment}
         isOpen={Boolean(selectedJobForPayment)}
         onClose={() => setSelectedJobForPayment(null)}
+      />
+
+      {/* WhatsApp Summary Modal */}
+      <WhatsAppSummaryModal
+        isOpen={isWhatsAppModalOpen}
+        onClose={() => setIsWhatsAppModalOpen(false)}
+        summaryText={generatedSummary}
+        onCopyAgain={handleCopyAgain}
+        hasCopied={hasCopiedInModal}
+        onOpenWhatsApp={handleOpenWhatsAppDirectly}
       />
     </div>
   );
