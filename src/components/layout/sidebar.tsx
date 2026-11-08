@@ -10,7 +10,6 @@ import {
   Users, 
   Settings, 
   GraduationCap, 
-  Target, 
   Sparkles, 
   PiggyBank, 
   X,
@@ -21,35 +20,75 @@ import { motion, AnimatePresence } from 'motion/react';
 import { spring } from '@animate-ui/react/utils/motion';
 
 export function Sidebar() {
-  const { mode, activeTab, setActiveTab, isSidebarOpen, setIsSidebarOpen } = useWorkspace();
+  const { 
+    mode, 
+    setMode, 
+    activeTab, 
+    setActiveTab, 
+    isSidebarOpen, 
+    setIsSidebarOpen,
+    jobs,
+    clients,
+    personalGoals
+  } = useWorkspace();
 
   interface NavItem {
     id: ActiveNavTab;
     label: string;
     icon: React.ElementType;
     badge?: string;
+    badgeVariant?: 'urgent' | 'debt' | 'neutral';
   }
 
+  const pendingUrgentCount = jobs.filter((j) => j.isUrgentToday && j.status !== 'delivered').length;
+  const hasPendingDebt = clients.some((c) => c.totalPending > 0);
+  const pendingGoalsCount = personalGoals.filter((g) => !g.isDone).length;
+
   const clientNavItems: NavItem[] = [
-    { id: 'today', label: 'Hoy (Prioritarios)', icon: Sun, badge: '2' },
+    { 
+      id: 'today', 
+      label: 'Hoy (Prioritarios)', 
+      icon: Sun, 
+      badge: pendingUrgentCount > 0 ? String(pendingUrgentCount) : undefined,
+      badgeVariant: 'urgent'
+    },
     { id: 'jobs', label: 'Todos los Trabajos', icon: Layers },
-    { id: 'finance', label: 'Finanzas & Cobros', icon: CreditCard, badge: 'Deudas' },
     { id: 'clients', label: 'Directorio Clientes', icon: Users },
+    { 
+      id: 'finance', 
+      label: 'Finanzas & Cobros', 
+      icon: CreditCard, 
+      badge: hasPendingDebt ? 'Cobros' : undefined,
+      badgeVariant: 'debt'
+    },
   ];
 
   const personalNavItems: NavItem[] = [
-    { id: 'today', label: 'Hoy (Mi Día)', icon: Sun },
-    { id: 'personal_subjects', label: 'Mis Materias U', icon: GraduationCap },
-    { id: 'personal_goals', label: 'Metas de Estudio', icon: Target },
-    { id: 'personal_ideas', label: 'Ideas & Proyectos Dev', icon: Sparkles },
-    { id: 'personal_savings', label: 'Planes de Ahorro', icon: PiggyBank },
+    { 
+      id: 'personal', 
+      label: 'Mi Espacio (General)', 
+      icon: Sparkles,
+      badge: pendingGoalsCount > 0 ? String(pendingGoalsCount) : undefined,
+      badgeVariant: 'neutral'
+    },
+    { id: 'personal_subjects', label: 'Mis Materias & Notas', icon: GraduationCap },
+    { id: 'personal_savings', label: 'Metas Dev & Ahorro', icon: PiggyBank },
   ];
-
-  const navItems = mode === 'clients' ? clientNavItems : personalNavItems;
 
   const handleSelectTab = (tab: ActiveNavTab) => {
     setActiveTab(tab);
+    if (tab === 'personal' || tab.startsWith('personal_')) {
+      setMode('personal');
+    } else if (tab === 'today' || tab === 'jobs' || tab === 'clients' || tab === 'finance') {
+      setMode('clients');
+    }
     setIsSidebarOpen(false);
+  };
+
+  const isTabActive = (item: NavItem) => {
+    if (activeTab === item.id) return true;
+    if (item.id === 'personal' && activeTab === 'personal') return true;
+    return false;
   };
 
   const SidebarContent = () => (
@@ -62,7 +101,7 @@ export function Sidebar() {
           </div>
           <div>
             <h1 className="text-sm font-semibold text-zinc-900 tracking-tight">Organizer</h1>
-            <p className="text-xs text-zinc-400 font-medium">Gestión Profesional</p>
+            <p className="text-xs text-zinc-400 font-medium">Gestión Profesional & Personal</p>
           </div>
         </div>
 
@@ -78,69 +117,101 @@ export function Sidebar() {
         </motion.button>
       </div>
 
-      {/* Active Space Indicator Badge */}
-      <div className="px-5 pt-5 pb-2">
-        <div className="px-3 py-2 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2">
-            {mode === 'clients' ? (
-              <Briefcase className="w-3.5 h-3.5 text-zinc-600" />
-            ) : (
-              <UserCheck className="w-3.5 h-3.5 text-zinc-600" />
-            )}
-            <span className="font-medium text-zinc-700">
-              {mode === 'clients' ? 'Espacio Clientes' : 'Espacio Personal'}
+      {/* Navigation Groups */}
+      <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
+        {/* Section 1: Clientes & Encargos */}
+        <div>
+          <div className="px-3 pb-2 flex items-center justify-between text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">
+            <span className="flex items-center gap-1.5">
+              <Briefcase className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Clientes & Encargos</span>
             </span>
           </div>
-          <button 
-            onClick={() => handleSelectTab('settings')}
-            className="text-[11px] text-zinc-400 hover:text-zinc-700 underline underline-offset-2"
-          >
-            Cambiar
-          </button>
+          <div className="space-y-1">
+            {clientNavItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = isTabActive(item);
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleSelectTab(item.id)}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors relative ${
+                    isActive
+                      ? 'text-zinc-900 font-semibold'
+                      : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50'
+                  }`}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="sidebar-active-indicator"
+                      transition={spring.highlight}
+                      className="absolute inset-0 bg-zinc-100 rounded-lg -z-0"
+                    />
+                  )}
+                  <div className="flex items-center gap-3 relative z-10">
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-zinc-900' : 'text-zinc-400'}`} />
+                    <span>{item.label}</span>
+                  </div>
+                  {item.badge && (
+                    <span className={`relative z-10 px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                      item.badgeVariant === 'debt'
+                        ? 'bg-amber-50 text-amber-700 border border-amber-200/50'
+                        : item.badgeVariant === 'urgent'
+                        ? 'bg-zinc-900 text-white font-bold tabular-nums'
+                        : 'bg-zinc-200/60 text-zinc-700'
+                    }`}>
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      {/* Navigation List */}
-      <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto">
-        <div className="px-3 pb-2 text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">
-          Navegación
+        {/* Section 2: Mi Espacio Personal */}
+        <div>
+          <div className="px-3 pb-2 flex items-center justify-between text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">
+            <span className="flex items-center gap-1.5">
+              <UserCheck className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Mi Espacio Personal</span>
+            </span>
+          </div>
+          <div className="space-y-1">
+            {personalNavItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = isTabActive(item);
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleSelectTab(item.id)}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors relative ${
+                    isActive
+                      ? 'text-zinc-900 font-semibold'
+                      : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50'
+                  }`}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="sidebar-active-indicator"
+                      transition={spring.highlight}
+                      className="absolute inset-0 bg-zinc-100 rounded-lg -z-0"
+                    />
+                  )}
+                  <div className="flex items-center gap-3 relative z-10">
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-zinc-900' : 'text-zinc-400'}`} />
+                    <span>{item.label}</span>
+                  </div>
+                  {item.badge && (
+                    <span className="relative z-10 px-2 py-0.5 rounded-full text-[10px] font-medium bg-zinc-200/60 text-zinc-700">
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => handleSelectTab(item.id)}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors relative ${
-                isActive
-                  ? 'text-zinc-900 font-semibold'
-                  : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50'
-              }`}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="sidebar-active-indicator"
-                  transition={spring.highlight}
-                  className="absolute inset-0 bg-zinc-100 rounded-lg -z-0"
-                />
-              )}
-              <div className="flex items-center gap-3 relative z-10">
-                <Icon className={`w-4 h-4 ${isActive ? 'text-zinc-900' : 'text-zinc-400'}`} />
-                <span>{item.label}</span>
-              </div>
-              {item.badge && (
-                <span className={`relative z-10 px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                  item.badge === 'Deudas'
-                    ? 'bg-amber-50 text-amber-700 border border-amber-200/50'
-                    : 'bg-zinc-200/60 text-zinc-700'
-                }`}>
-                  {item.badge}
-                </span>
-              )}
-            </button>
-          );
-        })}
       </nav>
 
       {/* Footer / Settings Link */}
@@ -154,7 +225,7 @@ export function Sidebar() {
           }`}
         >
           <Settings className="w-4 h-4 text-zinc-400" />
-          <span>Configuración & Espacios</span>
+          <span>Configuración</span>
         </button>
       </div>
     </div>

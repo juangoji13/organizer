@@ -3,19 +3,20 @@
 @theme {
   --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --shadow-porcelain: 0 4px 24px rgba(0, 0, 0, 0.06);
 }
 
 :root {
   --background: #fafafa;
-  --foreground: #18181b;
+  --foreground: #09090b;
   --surface: #ffffff;
-  --surface-subtle: #f4f4f5;
-  --border: #e4e4e7;
-  --border-subtle: #f4f4f5;
+  --surface-subtle: #fafafa;
+  --border: rgba(0, 0, 0, 0.06);
+  --border-subtle: rgba(0, 0, 0, 0.04);
   --text-primary: #09090b;
   --text-secondary: #52525b;
   --text-muted: #71717a;
-  --accent: #18181b;
+  --accent: #09090b;
   --accent-soft: #f4f4f5;
   --success: #059669;
   --warning: #d97706;
@@ -28,6 +29,23 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Executive Porcelain Minimal Utility Tokens */
+.shadow-porcelain {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.text-primary-token {
+  color: #09090b;
+}
+
+.text-secondary-token {
+  color: #52525b;
+}
+
+.text-muted-token {
+  color: #71717a;
 }
 
 /* Safe area support for iOS / Android notch & home bar */

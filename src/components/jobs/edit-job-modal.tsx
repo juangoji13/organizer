@@ -98,33 +98,34 @@ export function EditJobModal({ job, isOpen, onClose }: EditJobModalProps) {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-zinc-950/40 backdrop-blur-xs overflow-y-auto">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/30 backdrop-blur-xs overflow-y-auto">
         <motion.div
           initial={{ opacity: 0, scale: 0.96, y: 12 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 12 }}
           transition={{ duration: 0.18 }}
-          className="relative w-full max-w-xl bg-white rounded-2xl shadow-xl border border-zinc-200/80 overflow-hidden my-6"
+          className="relative w-full max-w-xl bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-black/[0.04] overflow-hidden my-6"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-100 bg-zinc-50/50">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-zinc-100 text-zinc-800 flex items-center justify-center">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-black/[0.04]">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-[#fafafa] text-[#09090b] border border-black/[0.04] flex items-center justify-center">
                 <Pencil className="w-4 h-4" />
               </div>
               <div>
-                <h2 className="text-sm sm:text-base font-bold text-zinc-900 leading-tight">
+                <h2 className="text-sm sm:text-base font-semibold text-[#09090b] leading-tight">
                   Editar Trabajo
                 </h2>
-                <p className="text-[11px] text-zinc-500">
+                <p className="text-[12px] text-[#71717a] mt-0.5">
                   Modifica los datos del encargo, tarifas o credenciales
                 </p>
               </div>
             </div>
 
             <button
+              type="button"
               onClick={onClose}
-              className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors"
+              className="p-1.5 rounded-lg text-[#71717a] hover:text-[#09090b] hover:bg-[#fafafa] transition-colors"
               aria-label="Cerrar modal"
             >
               <X className="w-4 h-4" />
@@ -134,7 +135,7 @@ export function EditJobModal({ job, isOpen, onClose }: EditJobModalProps) {
           <form onSubmit={handleSubmit} className="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
             {/* Delete confirmation banner */}
             {isConfirmingDelete && (
-              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="p-3.5 rounded-xl bg-rose-50/70 border border-rose-200/60 text-rose-950 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
                   <span>¿Confirmas la eliminación permanente de este trabajo y sus entregables?</span>
@@ -143,18 +144,19 @@ export function EditJobModal({ job, isOpen, onClose }: EditJobModalProps) {
                   <button
                     type="button"
                     onClick={() => setIsConfirmingDelete(false)}
-                    className="px-2.5 py-1 text-xs rounded-lg text-zinc-600 hover:bg-rose-100/60"
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg text-[#52525b] hover:bg-rose-100/60 transition-colors"
                   >
                     Cancelar
                   </button>
-                  <button
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
                     type="button"
                     onClick={handleDelete}
                     disabled={isSubmitting}
-                    className="px-3 py-1 text-xs font-semibold rounded-lg bg-rose-600 hover:bg-rose-700 text-white"
+                    className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-rose-600 hover:bg-rose-700 text-white shadow-xs transition-colors"
                   >
                     Eliminar
-                  </button>
+                  </motion.button>
                 </div>
               </div>
             )}
@@ -162,7 +164,7 @@ export function EditJobModal({ job, isOpen, onClose }: EditJobModalProps) {
             {/* Materia y Título */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium text-zinc-700 block mb-1">
+                <label className="text-xs font-medium text-[#52525b] block mb-1.5">
                   Materia / Asignatura *
                 </label>
                 <input
@@ -170,13 +172,13 @@ export function EditJobModal({ job, isOpen, onClose }: EditJobModalProps) {
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="Ej: Inglés Connect, Cálculo Integral..."
-                  className="w-full px-3 py-2 rounded-xl border border-zinc-200/90 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-zinc-400"
+                  className="w-full px-3 py-2 rounded-lg border border-black/[0.08] bg-[#fafafa] text-xs sm:text-sm text-[#09090b] placeholder:text-[#71717a]/50 focus:bg-white focus:outline-none focus:border-[#09090b] transition-all"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-xs font-medium text-zinc-700 block mb-1">
+                <label className="text-xs font-medium text-[#52525b] block mb-1.5">
                   Título del Trabajo *
                 </label>
                 <input
@@ -184,7 +186,7 @@ export function EditJobModal({ job, isOpen, onClose }: EditJobModalProps) {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Ej: Taller 3: Integración por Partes..."
-                  className="w-full px-3 py-2 rounded-xl border border-zinc-200/90 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-zinc-400"
+                  className="w-full px-3 py-2 rounded-lg border border-black/[0.08] bg-[#fafafa] text-xs sm:text-sm text-[#09090b] placeholder:text-[#71717a]/50 focus:bg-white focus:outline-none focus:border-[#09090b] transition-all"
                   required
                 />
               </div>
@@ -193,7 +195,7 @@ export function EditJobModal({ job, isOpen, onClose }: EditJobModalProps) {
             {/* Cliente y Teléfono */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium text-zinc-700 block mb-1">
+                <label className="text-xs font-medium text-[#52525b] block mb-1.5">
                   Cliente *
                 </label>
                 <input
@@ -201,13 +203,13 @@ export function EditJobModal({ job, isOpen, onClose }: EditJobModalProps) {
                   value={clientName}
                   onChange={(e) => handleClientNameChange(e.target.value)}
                   placeholder="Nombre del estudiante"
-                  className="w-full px-3 py-2 rounded-xl border border-zinc-200/90 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-zinc-400"
+                  className="w-full px-3 py-2 rounded-lg border border-black/[0.08] bg-[#fafafa] text-xs sm:text-sm text-[#09090b] placeholder:text-[#71717a]/50 focus:bg-white focus:outline-none focus:border-[#09090b] transition-all"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-xs font-medium text-zinc-700 block mb-1">
+                <label className="text-xs font-medium text-[#52525b] block mb-1.5">
                   Teléfono / WhatsApp
                 </label>
                 <input
@@ -215,7 +217,7 @@ export function EditJobModal({ job, isOpen, onClose }: EditJobModalProps) {
                   value={clientPhone}
                   onChange={(e) => setClientPhone(e.target.value)}
                   placeholder="Ej: 573001234567"
-                  className="w-full px-3 py-2 rounded-xl border border-zinc-200/90 text-xs sm:text-sm text-zinc-900 font-mono focus:outline-none focus:border-zinc-400"
+                  className="w-full px-3 py-2 rounded-lg border border-black/[0.08] bg-[#fafafa] text-xs sm:text-sm text-[#09090b] placeholder:text-[#71717a]/50 focus:bg-white focus:outline-none focus:border-[#09090b] transition-all"
                 />
               </div>
             </div>
@@ -223,7 +225,7 @@ export function EditJobModal({ job, isOpen, onClose }: EditJobModalProps) {
             {/* Tarifa y Estado */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="text-xs font-medium text-zinc-700 block mb-1">
+                <label className="text-xs font-medium text-[#52525b] block mb-1.5">
                   Tarifa Total (COP)
                 </label>
                 <input
@@ -233,12 +235,12 @@ export function EditJobModal({ job, isOpen, onClose }: EditJobModalProps) {
                   value={totalPrice}
                   onChange={(e) => setTotalPrice(e.target.value === '' ? '' : Number(e.target.value))}
                   placeholder="50000"
-                  className="w-full px-3 py-2 rounded-xl border border-zinc-200/90 text-xs sm:text-sm font-mono text-zinc-900 focus:outline-none focus:border-zinc-400"
+                  className="w-full px-3 py-2 rounded-lg border border-black/[0.08] bg-[#fafafa] text-xs sm:text-sm font-mono tabular-nums text-[#09090b] placeholder:text-[#71717a]/50 focus:bg-white focus:outline-none focus:border-[#09090b] transition-all"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-medium text-zinc-700 block mb-1">
+                <label className="text-xs font-medium text-[#52525b] block mb-1.5">
                   Abonado (COP)
                 </label>
                 <input
@@ -248,18 +250,18 @@ export function EditJobModal({ job, isOpen, onClose }: EditJobModalProps) {
                   value={paidAmount}
                   onChange={(e) => setPaidAmount(e.target.value === '' ? '' : Number(e.target.value))}
                   placeholder="0"
-                  className="w-full px-3 py-2 rounded-xl border border-zinc-200/90 text-xs sm:text-sm font-mono text-zinc-900 focus:outline-none focus:border-zinc-400"
+                  className="w-full px-3 py-2 rounded-lg border border-black/[0.08] bg-[#fafafa] text-xs sm:text-sm font-mono tabular-nums text-[#09090b] placeholder:text-[#71717a]/50 focus:bg-white focus:outline-none focus:border-[#09090b] transition-all"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-medium text-zinc-700 block mb-1">
+                <label className="text-xs font-medium text-[#52525b] block mb-1.5">
                   Estado
                 </label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as ClientJob['status'])}
-                  className="w-full px-3 py-2 rounded-xl border border-zinc-200/90 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-zinc-400 bg-white"
+                  className="w-full px-3 py-2 rounded-lg border border-black/[0.08] text-xs sm:text-sm text-[#09090b] focus:outline-none focus:border-[#09090b] bg-[#fafafa] focus:bg-white transition-all"
                 >
                   <option value="in_progress">En Curso</option>
                   <option value="delivered">Entregado</option>
@@ -273,19 +275,19 @@ export function EditJobModal({ job, isOpen, onClose }: EditJobModalProps) {
             {/* Fechas y Horas */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium text-zinc-700 block mb-1">
+                <label className="text-xs font-medium text-[#52525b] block mb-1.5">
                   Fecha Límite
                 </label>
                 <input
                   type="date"
                   value={deadlineDate}
                   onChange={(e) => setDeadlineDate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-zinc-200/90 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-zinc-400 font-mono"
+                  className="w-full px-3 py-2 rounded-lg border border-black/[0.08] bg-[#fafafa] text-xs sm:text-sm text-[#09090b] focus:outline-none focus:bg-white focus:border-[#09090b] transition-all"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-medium text-zinc-700 block mb-1">
+                <label className="text-xs font-medium text-[#52525b] block mb-1.5">
                   Hora Límite
                 </label>
                 <input
@@ -293,19 +295,19 @@ export function EditJobModal({ job, isOpen, onClose }: EditJobModalProps) {
                   value={deadlineTime}
                   onChange={(e) => setDeadlineTime(e.target.value)}
                   placeholder="Ej: 11:59 PM o 6:00 PM"
-                  className="w-full px-3 py-2 rounded-xl border border-zinc-200/90 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-zinc-400 font-mono"
+                  className="w-full px-3 py-2 rounded-lg border border-black/[0.08] bg-[#fafafa] text-xs sm:text-sm text-[#09090b] placeholder:text-[#71717a]/50 focus:outline-none focus:bg-white focus:border-[#09090b] transition-all"
                 />
               </div>
             </div>
 
             {/* Plataforma & Credenciales */}
-            <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/70 space-y-3">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 block">
+            <div className="p-4 rounded-xl bg-[#fafafa] border border-black/[0.04] space-y-3">
+              <span className="text-xs font-semibold text-[#52525b] block">
                 Plataforma & Credenciales Universitarias
               </span>
 
               <div>
-                <label className="text-xs font-medium text-zinc-700 block mb-1">
+                <label className="text-xs font-medium text-[#52525b] block mb-1.5">
                   Plataforma
                 </label>
                 <input
@@ -313,13 +315,13 @@ export function EditJobModal({ job, isOpen, onClose }: EditJobModalProps) {
                   value={platform}
                   onChange={(e) => setPlatform(e.target.value)}
                   placeholder="McGraw-Hill Connect, Teams, Moodle, Blackboard..."
-                  className="w-full px-3 py-2 rounded-xl border border-zinc-200/90 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-zinc-400 bg-white"
+                  className="w-full px-3 py-2 rounded-lg border border-black/[0.08] text-xs sm:text-sm text-[#09090b] placeholder:text-[#71717a]/50 focus:outline-none focus:border-[#09090b] bg-white transition-all"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs font-medium text-zinc-700 block mb-1">
+                  <label className="text-xs font-medium text-[#52525b] block mb-1.5">
                     Usuario / Correo
                   </label>
                   <input
@@ -327,12 +329,12 @@ export function EditJobModal({ job, isOpen, onClose }: EditJobModalProps) {
                     value={platformUser}
                     onChange={(e) => setPlatformUser(e.target.value)}
                     placeholder="usuario@universidad.edu.co"
-                    className="w-full px-3 py-2 rounded-xl border border-zinc-200/90 text-xs font-mono text-zinc-900 focus:outline-none focus:border-zinc-400 bg-white"
+                    className="w-full px-3 py-2 rounded-lg border border-black/[0.08] text-xs font-mono text-[#09090b] placeholder:text-[#71717a]/50 focus:outline-none focus:border-[#09090b] bg-white transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-medium text-zinc-700 block mb-1">
+                  <label className="text-xs font-medium text-[#52525b] block mb-1.5">
                     Contraseña
                   </label>
                   <div className="relative flex items-center">
@@ -341,12 +343,12 @@ export function EditJobModal({ job, isOpen, onClose }: EditJobModalProps) {
                       value={platformPass}
                       onChange={(e) => setPlatformPass(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full px-3 pr-10 py-2 rounded-xl border border-zinc-200/90 text-xs font-mono text-zinc-900 focus:outline-none focus:border-zinc-400 bg-white"
+                      className="w-full px-3 pr-10 py-2 rounded-lg border border-black/[0.08] text-xs font-mono text-[#09090b] placeholder:text-[#71717a]/50 focus:outline-none focus:border-[#09090b] bg-white transition-all"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-2.5 p-1 text-zinc-400 hover:text-zinc-700"
+                      className="absolute right-2.5 p-1 text-[#71717a] hover:text-[#09090b] transition-colors"
                       aria-label={showPassword ? 'Ocultar' : 'Mostrar'}
                     >
                       {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
@@ -357,11 +359,11 @@ export function EditJobModal({ job, isOpen, onClose }: EditJobModalProps) {
             </div>
 
             {/* Modal Bottom Actions */}
-            <div className="flex items-center justify-between pt-3 border-t border-zinc-100">
+            <div className="flex items-center justify-between pt-3.5 border-t border-black/[0.04]">
               <button
                 type="button"
                 onClick={() => setIsConfirmingDelete(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50/80 transition-colors"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Eliminar Trabajo</span>
@@ -371,17 +373,18 @@ export function EditJobModal({ job, isOpen, onClose }: EditJobModalProps) {
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-3.5 py-2 rounded-xl text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
+                  className="px-3.5 py-2 rounded-lg text-xs font-medium text-[#52525b] hover:text-[#09090b] hover:bg-[#fafafa] transition-colors"
                 >
                   Cancelar
                 </button>
-                <button
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 text-xs font-semibold transition-all shadow-xs"
+                  className="px-4 py-2 rounded-lg bg-[#09090b] text-white hover:bg-[#18181b] disabled:opacity-50 text-xs font-semibold transition-all shadow-[0_1px_2px_rgba(0,0,0,0.08)]"
                 >
                   {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
-                </button>
+                </motion.button>
               </div>
             </div>
           </form>

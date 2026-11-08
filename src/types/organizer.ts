@@ -5,6 +5,7 @@ export type ActiveNavTab =
   | 'jobs' 
   | 'finance' 
   | 'clients' 
+  | 'personal'
   | 'personal_subjects' 
   | 'personal_goals' 
   | 'personal_ideas' 

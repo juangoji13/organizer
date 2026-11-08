@@ -23,7 +23,7 @@ import { EditJobModal } from '@/components/jobs/edit-job-modal';
 import { ClientJob } from '@/types/organizer';
 
 export function ClientsView() {
-  const { clients, jobs } = useWorkspace();
+  const { clients, jobs, setActiveTab } = useWorkspace();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDebtOnly, setFilterDebtOnly] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
@@ -101,15 +101,35 @@ export function ClientsView() {
           </p>
         </div>
 
-        {/* Direct Action: + Nuevo Cliente */}
-        <button
-          type="button"
-          onClick={() => setIsCreateClientOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 text-xs font-semibold transition-colors shadow-xs cursor-pointer shrink-0"
-        >
-          <UserPlus className="w-3.5 h-3.5" />
-          <span>Nuevo Cliente</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Quick link to Finance & Cobros */}
+          <button
+            type="button"
+            onClick={() => setActiveTab('finance')}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200/90 bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-semibold shadow-xs transition-colors shrink-0"
+            title="Ir a Finanzas & Cobros"
+          >
+            <CreditCard className="w-3.5 h-3.5 text-zinc-500" />
+            <span className="hidden sm:inline">Finanzas & Cobros</span>
+            <span className="sm:hidden">Finanzas</span>
+            {totalClientsWithDebt > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 tabular-nums">
+                {totalClientsWithDebt}
+              </span>
+            )}
+          </button>
+
+          {/* Direct Action: + Nuevo Cliente */}
+          <button
+            type="button"
+            onClick={() => setIsCreateClientOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 text-xs font-semibold transition-colors shadow-xs cursor-pointer shrink-0"
+          >
+            <UserPlus className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Nuevo Cliente</span>
+            <span className="sm:hidden">Nuevo</span>
+          </button>
+        </div>
       </div>
 
       {/* Ultralight Search & Filter Bar */}

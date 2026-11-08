@@ -321,8 +321,16 @@ function EditNoteModal({ note, isOpen, onClose }: EditNoteModalProps) {
 }
 
 export function PersonalView() {
-  const { personalGoals, toggleGoal, adjustSavings, deletePersonalItem } = useWorkspace();
+  const { personalGoals, toggleGoal, adjustSavings, deletePersonalItem, activeTab } = useWorkspace();
   const [activeMainTab, setActiveMainTab] = useState<MainSectionTab>('study_notes');
+
+  useEffect(() => {
+    if (activeTab === 'personal_savings' || activeTab === 'personal_ideas') {
+      setActiveMainTab('dev_savings');
+    } else if (activeTab === 'personal_subjects' || activeTab === 'personal_goals') {
+      setActiveMainTab('study_notes');
+    }
+  }, [activeTab]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalInitialType, setModalInitialType] = useState<'job' | 'personal' | 'note' | null>(null);
   const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);

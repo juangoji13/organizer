@@ -15,7 +15,7 @@ import { UniversalCreateModal } from '@/components/common/universal-create-modal
 import { ToastContainer } from '@/components/common/toast-container';
 
 function MainContent() {
-  const { activeTab, mode } = useWorkspace();
+  const { activeTab } = useWorkspace();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const handleOpenCreateModal = () => {
@@ -25,13 +25,14 @@ function MainContent() {
   const renderActiveView = () => {
     switch (activeTab) {
       case 'today':
-        return mode === 'clients' ? <TodayView /> : <PersonalView />;
+        return <TodayView />;
       case 'jobs':
         return <JobsView />;
       case 'finance':
         return <FinanceView />;
       case 'clients':
         return <ClientsView />;
+      case 'personal':
       case 'personal_subjects':
       case 'personal_goals':
       case 'personal_ideas':

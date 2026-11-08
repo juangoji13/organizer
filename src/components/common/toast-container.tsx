@@ -25,49 +25,50 @@ function ToastItem({ toast, onDismiss }: { toast: ToastNotification; onDismiss: 
   const getIcon = () => {
     switch (toast.type) {
       case 'success':
-        return <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />;
+        return <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />;
       case 'warning':
-        return <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />;
+        return <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />;
       case 'error':
-        return <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />;
+        return <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />;
       default:
-        return <Info className="w-4 h-4 text-blue-400 shrink-0" />;
+        return <Info className="w-4 h-4 text-blue-600 shrink-0" />;
     }
   };
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      initial={{ opacity: 0, y: 20, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 15, scale: 0.95 }}
-      transition={{ duration: 0.2, ease: 'easeOut' }}
-      className="pointer-events-auto flex items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl bg-zinc-950 text-white border border-zinc-800 shadow-2xl backdrop-blur-md min-h-[52px]"
+      exit={{ opacity: 0, y: 15, scale: 0.96 }}
+      transition={{ duration: 0.18, ease: 'easeOut' }}
+      className="pointer-events-auto flex items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl bg-white text-[#09090b] border border-black/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.08)] min-h-[52px]"
       role="alert"
     >
       <div className="flex items-center gap-2.5 min-w-0 flex-1">
         {getIcon()}
-        <span className="text-xs font-medium text-zinc-100 leading-snug line-clamp-2">
+        <span className="text-xs font-medium text-[#09090b] leading-snug line-clamp-2">
           {toast.message}
         </span>
       </div>
 
       <div className="flex items-center gap-1.5 shrink-0">
         {toast.onUndo && (
-          <button
+          <motion.button
+            whileTap={{ scale: 0.98 }}
             type="button"
             onClick={handleUndo}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-100 text-zinc-950 hover:bg-white active:scale-95 text-xs font-bold transition-all shadow-xs cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#09090b] text-white hover:bg-[#18181b] text-xs font-semibold transition-all shadow-[0_1px_2px_rgba(0,0,0,0.08)] cursor-pointer"
           >
             <RotateCcw className="w-3 h-3 stroke-[2.5]" />
             <span>{toast.undoLabel || 'Deshacer'}</span>
-          </button>
+          </motion.button>
         )}
 
         <button
           type="button"
           onClick={() => onDismiss(toast.id)}
-          className="p-1 rounded-md text-zinc-400 hover:text-white transition-colors cursor-pointer"
+          className="p-1 rounded-md text-[#71717a] hover:text-[#09090b] hover:bg-[#fafafa] transition-colors cursor-pointer"
           aria-label="Cerrar notificación"
         >
           <X className="w-3.5 h-3.5" />

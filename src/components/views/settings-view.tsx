@@ -64,7 +64,7 @@ export function SettingsView() {
             <button
               onClick={() => {
                 setMode('personal');
-                setActiveTab('personal_subjects');
+                setActiveTab('personal');
               }}
               className={`p-4 rounded-xl border text-left transition-all ${
                 mode === 'personal'

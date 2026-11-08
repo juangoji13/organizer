@@ -21,35 +21,29 @@ export function TopHeader({ onOpenCreateModal }: TopHeaderProps) {
     setDateString(formatted.replace('.', ''));
   }, []);
 
+  const isPersonalEnvironment = activeTab === 'personal' || activeTab.startsWith('personal_');
+
   const getTabTitle = () => {
     switch (activeTab) {
       case 'today':
-        return mode === 'clients' ? 'Hoy' : 'Mi Día';
+        return 'Hoy';
       case 'jobs':
         return 'Trabajos';
       case 'finance':
         return 'Finanzas';
       case 'clients':
         return 'Clientes';
+      case 'personal':
       case 'personal_subjects':
-        return 'Materias U';
       case 'personal_goals':
-        return 'Metas';
       case 'personal_ideas':
-        return 'Ideas Dev';
       case 'personal_savings':
-        return 'Ahorro';
+        return 'Mi Espacio';
       case 'settings':
         return 'Configuración';
       default:
         return 'Organizer';
     }
-  };
-
-  const toggleWorkspaceMode = () => {
-    const newMode = mode === 'clients' ? 'personal' : 'clients';
-    setMode(newMode);
-    setActiveTab('today');
   };
 
   return (
@@ -67,8 +61,8 @@ export function TopHeader({ onOpenCreateModal }: TopHeaderProps) {
           </div>
         </div>
 
-        {/* Right: Quick Action (+) for Desktop + Fast Workspace Switcher (Clientes ⇄ Personal) */}
-        <div className="flex items-center gap-2">
+        {/* Right: Quick Action (+) for Desktop + Subtle Environment Selector / Indicator */}
+        <div className="flex items-center gap-2 sm:gap-3">
           {onOpenCreateModal && (
             <button
               onClick={onOpenCreateModal}
@@ -76,31 +70,49 @@ export function TopHeader({ onOpenCreateModal }: TopHeaderProps) {
               title="Crear nuevo registro"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>
-                {mode === 'clients' ? 'Nuevo Trabajo' : 'Nueva Meta'}
-              </span>
+              <span>Nuevo Registro</span>
             </button>
           )}
 
-          {/* Clean Workspace Toggle (Clientes vs Personal) */}
-          <button
-            onClick={toggleWorkspaceMode}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-zinc-200/80 bg-zinc-50 hover:bg-zinc-100 text-zinc-800 text-xs font-medium transition-colors min-h-[34px]"
-            title="Cambiar enfoque"
-            aria-label={`Cambiar a modo ${mode === 'clients' ? 'Personal' : 'Clientes'}`}
-          >
-            {mode === 'clients' ? (
-              <>
-                <Briefcase className="w-3.5 h-3.5 text-zinc-600" />
-                <span className="text-[11px] font-semibold text-zinc-800">Clientes</span>
-              </>
-            ) : (
-              <>
-                <UserCheck className="w-3.5 h-3.5 text-zinc-700" />
-                <span className="text-[11px] font-semibold text-zinc-800">Personal</span>
-              </>
-            )}
-          </button>
+          {/* Subtle Environment Indicator / Selector */}
+          <div className="inline-flex items-center p-0.5 bg-zinc-100/90 border border-zinc-200/70 rounded-lg text-xs select-none">
+            <button
+              type="button"
+              onClick={() => {
+                setMode('clients');
+                if (isPersonalEnvironment) {
+                  setActiveTab('today');
+                }
+              }}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all ${
+                !isPersonalEnvironment
+                  ? 'bg-white text-zinc-950 font-semibold shadow-xs'
+                  : 'text-zinc-500 hover:text-zinc-800 font-medium'
+              }`}
+              aria-label="Entorno Clientes"
+              title="Entorno Clientes & Encargos"
+            >
+              <Briefcase className="w-3.5 h-3.5" />
+              <span className="text-[11px]">Clientes</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMode('personal');
+                setActiveTab('personal');
+              }}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all ${
+                isPersonalEnvironment
+                  ? 'bg-white text-zinc-950 font-semibold shadow-xs'
+                  : 'text-zinc-500 hover:text-zinc-800 font-medium'
+              }`}
+              aria-label="Entorno Mi Espacio"
+              title="Entorno Mi Espacio Personal"
+            >
+              <UserCheck className="w-3.5 h-3.5" />
+              <span className="text-[11px]">Mi Espacio</span>
+            </button>
+          </div>
         </div>
       </div>
     </header>
