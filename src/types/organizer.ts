@@ -49,7 +49,7 @@ export interface ClientContact {
 
 export interface PersonalGoal {
   id: string;
-  category: 'study' | 'dev' | 'savings';
+  category: 'study' | 'dev' | 'savings' | 'note';
   title: string;
   description?: string;
   currentAmount?: number;

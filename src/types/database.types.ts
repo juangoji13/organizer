@@ -7,7 +7,7 @@ export type Json =
   | Json[];
 
 export type JobStatus = 'pending' | 'in_progress' | 'delivered' | 'paid' | 'completed' | 'cancelled';
-export type PersonalItemType = 'university' | 'programming' | 'study_goal' | 'savings' | 'study' | 'dev';
+export type PersonalItemType = 'university' | 'programming' | 'study_goal' | 'savings' | 'study' | 'dev' | 'note';
 
 export interface Database {
   public: {

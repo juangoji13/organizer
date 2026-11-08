@@ -11,20 +11,14 @@ import { FinanceView } from '@/components/views/finance-view';
 import { ClientsView } from '@/components/views/clients-view';
 import { PersonalView } from '@/components/views/personal-view';
 import { SettingsView } from '@/components/views/settings-view';
-import { CreateJobModal } from '@/components/jobs/create-job-modal';
-import { CreatePersonalModal } from '@/components/personal/create-personal-modal';
+import { UniversalCreateModal } from '@/components/common/universal-create-modal';
 
 function MainContent() {
   const { activeTab, mode } = useWorkspace();
-  const [isJobModalOpen, setIsJobModalOpen] = useState(false);
-  const [isPersonalModalOpen, setIsPersonalModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const handleOpenCreateModal = () => {
-    if (mode === 'clients') {
-      setIsJobModalOpen(true);
-    } else {
-      setIsPersonalModalOpen(true);
-    }
+    setIsCreateModalOpen(true);
   };
 
   const renderActiveView = () => {
@@ -52,19 +46,15 @@ function MainContent() {
   return (
     <div className="flex-1 flex flex-col min-w-0 bg-[#fafafa] min-h-screen">
       <TopHeader onOpenCreateModal={handleOpenCreateModal} />
-      <main className="flex-1 overflow-y-auto pb-24 md:pb-8">
+      <main className="flex-1 overflow-y-auto pb-32 md:pb-8">
         {renderActiveView()}
       </main>
       <BottomNav onOpenCreateModal={handleOpenCreateModal} />
 
-      {/* Modals */}
-      <CreateJobModal
-        isOpen={isJobModalOpen}
-        onClose={() => setIsJobModalOpen(false)}
-      />
-      <CreatePersonalModal
-        isOpen={isPersonalModalOpen}
-        onClose={() => setIsPersonalModalOpen(false)}
+      {/* Universal Creator Modal (Zero guessing!) */}
+      <UniversalCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
       />
     </div>
   );
