@@ -56,25 +56,25 @@ export function PartialPaymentModal({ job, isOpen, onClose }: PartialPaymentModa
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-xs">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
           transition={{ duration: 0.18 }}
-          className="relative w-full max-w-md bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-black/[0.04] overflow-hidden"
+          className="relative w-full max-w-md bg-white dark:bg-[#121215] rounded-2xl shadow-2xl border border-zinc-200/80 dark:border-white/10 overflow-hidden"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-black/[0.04]">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-100 dark:border-white/10">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 flex items-center justify-center border border-emerald-200/50 dark:border-emerald-800/30">
                 <DollarSign className="w-4 h-4 stroke-[2.5]" />
               </div>
               <div>
-                <h2 className="text-base font-semibold text-[#09090b] leading-tight">
+                <h2 className="text-base font-semibold text-zinc-950 dark:text-zinc-100 leading-tight">
                   Registrar Abono
                 </h2>
-                <p className="text-[12px] text-[#71717a] mt-0.5">
+                <p className="text-[12px] text-zinc-500 dark:text-zinc-400 mt-0.5">
                   {job.clientName} • {job.subject}
                 </p>
               </div>
@@ -83,7 +83,7 @@ export function PartialPaymentModal({ job, isOpen, onClose }: PartialPaymentModa
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-lg text-[#71717a] hover:text-[#09090b] hover:bg-[#fafafa] transition-colors"
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
               aria-label="Cerrar modal"
             >
               <X className="w-4 h-4" />
@@ -92,22 +92,22 @@ export function PartialPaymentModal({ job, isOpen, onClose }: PartialPaymentModa
 
           <form onSubmit={handleSubmit} className="p-5 space-y-4">
             {/* Status Breakdown Strip */}
-            <div className="p-3.5 rounded-xl bg-[#fafafa] border border-black/[0.04] grid grid-cols-3 gap-2 text-center">
+            <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/60 dark:border-white/10 grid grid-cols-3 gap-2 text-center">
               <div>
-                <span className="text-[11px] font-medium text-[#71717a] block mb-0.5">Tarifa Total</span>
-                <span className="text-xs font-semibold text-[#09090b] font-mono tabular-nums">
+                <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 block mb-0.5">Tarifa Total</span>
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 font-mono tabular-nums">
                   ${job.totalPrice.toLocaleString()}
                 </span>
               </div>
               <div>
-                <span className="text-[11px] font-medium text-[#71717a] block mb-0.5">Ya Abonado</span>
-                <span className="text-xs font-semibold text-emerald-700 font-mono tabular-nums">
+                <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 block mb-0.5">Ya Abonado</span>
+                <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 font-mono tabular-nums">
                   ${job.paidAmount.toLocaleString()}
                 </span>
               </div>
               <div>
-                <span className="text-[11px] font-medium text-[#71717a] block mb-0.5">Saldo Actual</span>
-                <span className="text-xs font-semibold text-amber-700 font-mono tabular-nums">
+                <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 block mb-0.5">Saldo Actual</span>
+                <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 font-mono tabular-nums">
                   ${pendingDebt.toLocaleString()}
                 </span>
               </div>
@@ -115,7 +115,7 @@ export function PartialPaymentModal({ job, isOpen, onClose }: PartialPaymentModa
 
             {/* Quick Amount Chips */}
             <div>
-              <label className="text-xs font-medium text-[#52525b] block mb-2">
+              <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400 block mb-2">
                 Abonos Rápidos Sugeridos
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
@@ -125,13 +125,13 @@ export function PartialPaymentModal({ job, isOpen, onClose }: PartialPaymentModa
                   return (
                     <motion.button
                       key={val}
-                      whileTap={{ scale: 0.98 }}
+                      whileTap={{ scale: 0.96 }}
                       type="button"
                       onClick={() => handleSelectQuickAmount(val)}
-                      className={`px-2.5 py-1.5 rounded-lg text-xs transition-colors border ${
+                      className={`px-2.5 py-1.5 rounded-lg text-xs transition-colors border cursor-pointer ${
                         isSelected
-                          ? 'bg-[#09090b] text-white border-[#09090b] font-semibold'
-                          : 'bg-white text-[#52525b] border-black/[0.08] hover:bg-[#fafafa]'
+                          ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 border-zinc-900 dark:border-zinc-100 font-semibold'
+                          : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200/80 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-zinc-700'
                       }`}
                     >
                       <span className="font-mono tabular-nums">+${(val / 1000).toFixed(0)}k</span>
@@ -139,13 +139,13 @@ export function PartialPaymentModal({ job, isOpen, onClose }: PartialPaymentModa
                   );
                 })}
                 <motion.button
-                  whileTap={{ scale: 0.98 }}
+                  whileTap={{ scale: 0.96 }}
                   type="button"
                   onClick={() => handleSelectQuickAmount(pendingDebt)}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs transition-colors border ${
+                  className={`px-2.5 py-1.5 rounded-lg text-xs transition-colors border cursor-pointer ${
                     numericAmount === pendingDebt
-                      ? 'bg-emerald-700 text-white border-emerald-700 font-semibold'
-                      : 'bg-emerald-50/70 text-emerald-800 border-emerald-200/80 hover:bg-emerald-100/70 font-medium'
+                      ? 'bg-emerald-700 dark:bg-emerald-600 text-white border-emerald-700 font-semibold'
+                      : 'bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200/80 dark:border-emerald-800/40 hover:bg-emerald-100/70 font-medium'
                   }`}
                 >
                   Saldar Todo
@@ -155,11 +155,11 @@ export function PartialPaymentModal({ job, isOpen, onClose }: PartialPaymentModa
 
             {/* Custom Amount Input */}
             <div>
-              <label className="text-xs font-medium text-[#52525b] block mb-1.5">
+              <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400 block mb-1.5">
                 Valor a Abonar (COP)
               </label>
               <div className="relative flex items-center">
-                <span className="absolute left-3.5 text-[#71717a] font-mono font-medium text-sm">$</span>
+                <span className="absolute left-3.5 text-zinc-400 dark:text-zinc-500 font-mono font-medium text-sm">$</span>
                 <input
                   type="number"
                   min="1"
@@ -171,7 +171,7 @@ export function PartialPaymentModal({ job, isOpen, onClose }: PartialPaymentModa
                     setAmount(val);
                   }}
                   placeholder="0"
-                  className="w-full pl-8 pr-4 py-2.5 rounded-lg border border-black/[0.08] bg-[#fafafa] text-sm font-semibold font-mono tabular-nums text-[#09090b] placeholder:text-[#71717a]/50 focus:bg-white focus:outline-none focus:border-[#09090b] transition-all min-h-[44px]"
+                  className="w-full pl-8 pr-4 py-2.5 rounded-lg border border-zinc-200/80 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900 text-sm font-semibold font-mono tabular-nums text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:bg-white dark:focus:bg-zinc-900 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-all min-h-[44px]"
                   required
                 />
               </div>
@@ -180,34 +180,34 @@ export function PartialPaymentModal({ job, isOpen, onClose }: PartialPaymentModa
             {/* Preview Banner */}
             <div className={`p-3.5 rounded-xl border text-xs flex items-center gap-2.5 ${
               willFullyPay
-                ? 'bg-emerald-50/70 border-emerald-200/70 text-emerald-900'
-                : 'bg-[#fafafa] border border-black/[0.04] text-[#52525b]'
+                ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-200/70 dark:border-emerald-800/40 text-emerald-900 dark:text-emerald-300'
+                : 'bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/60 dark:border-white/10 text-zinc-600 dark:text-zinc-400'
             }`}>
               {willFullyPay ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               ) : (
-                <ArrowRight className="w-4 h-4 text-[#71717a] shrink-0" />
+                <ArrowRight className="w-4 h-4 text-zinc-400 dark:text-zinc-500 shrink-0" />
               )}
               <div className="leading-snug">
                 {willFullyPay ? (
                   <span>
-                    <strong className="font-semibold text-emerald-950">¡Deuda saldada en su totalidad!</strong> Este trabajo pasará automáticamente a estado <strong className="font-semibold text-emerald-950">Pagado</strong>.
+                    <strong className="font-semibold text-emerald-950 dark:text-emerald-200">¡Deuda saldada en su totalidad!</strong> Este trabajo pasará automáticamente a estado <strong className="font-semibold text-emerald-950 dark:text-emerald-200">Pagado</strong>.
                   </span>
                 ) : (
                   <span>
                     Nuevo saldo pendiente tras este abono:{' '}
-                    <strong className="font-mono tabular-nums text-[#09090b] font-semibold">${remainingAfterPayment.toLocaleString()} COP</strong>
+                    <strong className="font-mono tabular-nums text-zinc-900 dark:text-zinc-100 font-semibold">${remainingAfterPayment.toLocaleString()} COP</strong>
                   </span>
                 )}
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-black/[0.04]">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-white/10">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-lg text-xs font-medium text-[#52525b] hover:text-[#09090b] hover:bg-[#fafafa] transition-colors min-h-[38px]"
+                className="px-4 py-2 rounded-lg text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors min-h-[38px] cursor-pointer"
               >
                 Cancelar
               </button>
@@ -215,7 +215,7 @@ export function PartialPaymentModal({ job, isOpen, onClose }: PartialPaymentModa
                 whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={isSubmitting || !numericAmount || numericAmount <= 0}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#09090b] text-white hover:bg-[#18181b] disabled:opacity-40 text-xs font-semibold transition-all shadow-[0_1px_2px_rgba(0,0,0,0.08)] min-h-[38px]"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-40 text-xs font-semibold transition-all shadow-xs min-h-[38px] cursor-pointer"
               >
                 <DollarSign className="w-3.5 h-3.5 stroke-[2.5]" />
                 <span>
