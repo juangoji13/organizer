@@ -5,22 +5,20 @@ import { ClientJob } from '@/types/organizer';
 import { useWorkspace } from '@/context/workspace-context';
 import { 
   MessageCircle, 
-  Copy, 
   Check, 
   ChevronDown, 
   ChevronUp, 
   Clock, 
   CheckCircle2,
   DollarSign,
-  KeyRound,
-  Eye,
-  EyeOff,
   Pencil
 } from 'lucide-react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'motion/react';
-import { spring } from '@animate-ui/react/utils/motion';
 import { PartialPaymentModal } from '@/components/jobs/partial-payment-modal';
 import { EditJobModal } from '@/components/jobs/edit-job-modal';
+import { CredentialsPopover } from '@/components/jobs/credentials-popover';
+import { JobActionsMenu } from '@/components/jobs/job-actions-menu';
+import { AppTooltip } from '@/components/ui/rac-tooltip';
 
 interface JobItemProps {
   job: ClientJob;
@@ -31,9 +29,6 @@ const progressSpring = { type: 'spring' as const, stiffness: 280, damping: 26 };
 export function JobItem({ job }: JobItemProps) {
   const { toggleDeliverable, markJobDelivered, markJobPaid } = useWorkspace();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isCredsOpen, setIsCredsOpen] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [copiedField, setCopiedField] = useState<'user' | 'pass' | null>(null);
 
   // Modal states
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -52,13 +47,6 @@ export function JobItem({ job }: JobItemProps) {
   const isDelivered = job.status === 'delivered';
   const isFullyPaid = job.paidAmount >= job.totalPrice;
   const pendingDebt = Math.max(0, job.totalPrice - job.paidAmount);
-
-  const copyField = (text: string, field: 'user' | 'pass', e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigator.clipboard.writeText(text);
-    setCopiedField(field);
-    setTimeout(() => setCopiedField(null), 1400);
-  };
 
   const openWhatsApp = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -126,20 +114,27 @@ export function JobItem({ job }: JobItemProps) {
                 <span>Límite: <strong className="text-zinc-700 dark:text-zinc-300 font-semibold">{job.deadlineTime}</strong></span>
               </div>
 
-              {/* Edit Button with Tactile Feedback */}
-              <motion.button
-                type="button"
-                whileTap={{ scale: 0.92 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsEditModalOpen(true);
-                }}
-                className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors ml-0.5"
-                title="Editar datos del trabajo"
-                aria-label="Editar trabajo"
-              >
-                <Pencil className="w-3.5 h-3.5" />
-              </motion.button>
+              {/* RAC Action Menu + Edit Button */}
+              <AppTooltip content="Editar detalles">
+                <motion.button
+                  type="button"
+                  whileTap={{ scale: 0.92 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsEditModalOpen(true);
+                  }}
+                  className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors cursor-pointer"
+                  aria-label="Editar trabajo"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </motion.button>
+              </AppTooltip>
+
+              <JobActionsMenu
+                job={job}
+                onEdit={() => setIsEditModalOpen(true)}
+                onPayment={() => setIsPaymentModalOpen(true)}
+              />
             </div>
           </div>
 
@@ -150,16 +145,18 @@ export function JobItem({ job }: JobItemProps) {
 
           {/* Cliente con WhatsApp integrado a la izquierda + Precio y Saldo a la derecha */}
           <div className="flex items-center justify-between gap-2 text-xs mb-2.5 pt-1.5 border-t border-zinc-100 dark:border-white/10">
-            <motion.button
-              type="button"
-              whileTap={{ scale: 0.97 }}
-              onClick={openWhatsApp}
-              className="group inline-flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors min-w-0 -ml-1 px-1 py-0.5 rounded-md hover:bg-emerald-50/60 dark:hover:bg-emerald-950/30 text-left"
-              title={`Contactar a ${job.clientName} por WhatsApp`}
-            >
-              <span className="text-xs sm:text-[13px] font-medium text-zinc-800 dark:text-zinc-200 truncate">{job.clientName}</span>
-              <MessageCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform shrink-0" />
-            </motion.button>
+            <AppTooltip content={`Chatear con ${job.clientName} en WhatsApp`}>
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.97 }}
+                onClick={openWhatsApp}
+                className="group inline-flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors min-w-0 -ml-1 px-1 py-0.5 rounded-md hover:bg-emerald-50/60 dark:hover:bg-emerald-950/30 text-left cursor-pointer"
+                aria-label={`Contactar a ${job.clientName} por WhatsApp`}
+              >
+                <span className="text-xs sm:text-[13px] font-medium text-zinc-800 dark:text-zinc-200 truncate">{job.clientName}</span>
+                <MessageCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform shrink-0" />
+              </motion.button>
+            </AppTooltip>
 
             <div className="flex items-center gap-1.5 shrink-0">
               <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 font-mono tabular-nums">
@@ -167,18 +164,20 @@ export function JobItem({ job }: JobItemProps) {
               </span>
 
               {!isFullyPaid ? (
-                <motion.button
-                  type="button"
-                  whileTap={{ scale: 0.94 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsPaymentModalOpen(true);
-                  }}
-                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono tabular-nums font-bold text-amber-900 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 border border-amber-200/60 dark:border-amber-800/40 transition-colors cursor-pointer"
-                  title="Registrar abono parcial"
-                >
-                  <span>Debe ${pendingDebt.toLocaleString()}</span>
-                </motion.button>
+                <AppTooltip content="Registrar abono de dinero">
+                  <motion.button
+                    type="button"
+                    whileTap={{ scale: 0.94 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsPaymentModalOpen(true);
+                    }}
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono tabular-nums font-bold text-amber-900 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 border border-amber-200/60 dark:border-amber-800/40 transition-colors cursor-pointer"
+                    aria-label="Registrar abono parcial"
+                  >
+                    <span>Debe ${pendingDebt.toLocaleString()}</span>
+                  </motion.button>
+                </AppTooltip>
               ) : (
                 <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/40 dark:border-emerald-800/40">
                   Pagado
@@ -187,98 +186,13 @@ export function JobItem({ job }: JobItemProps) {
             </div>
           </div>
 
-          {/* Micro-pastilla de credenciales horizontal y esbelta */}
+          {/* Micro-pastilla de credenciales con RAC Popover */}
           <div className="mb-2.5">
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-zinc-100/70 dark:bg-zinc-800/60 hover:bg-zinc-100/90 dark:hover:bg-zinc-800/90 border border-zinc-200/50 dark:border-white/10 text-[11px] text-zinc-600 dark:text-zinc-400 transition-colors">
-              <KeyRound className="w-3 h-3 text-zinc-400 dark:text-zinc-500 shrink-0" />
-              <span className="font-semibold uppercase tracking-wider text-[10px] text-zinc-700 dark:text-zinc-300 shrink-0">
-                {job.platform}
-              </span>
-              <span className="text-zinc-300 dark:text-zinc-600">•</span>
-              <span className="font-mono text-zinc-600 dark:text-zinc-400 truncate max-w-[120px] sm:max-w-[180px]">
-                {job.platformUser}
-              </span>
-
-              {/* Botón directo de copiar usuario en 1 toque */}
-              <motion.button
-                type="button"
-                whileTap={{ scale: 0.88 }}
-                onClick={(e) => copyField(job.platformUser, 'user', e)}
-                className="p-1 -mr-0.5 rounded text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-200/60 dark:hover:bg-zinc-700/60 transition-all"
-                title="Copiar usuario"
-                aria-label="Copiar usuario"
-              >
-                {copiedField === 'user' ? (
-                  <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                ) : (
-                  <Copy className="w-3 h-3" />
-                )}
-              </motion.button>
-
-              <span className="text-zinc-300 dark:text-zinc-600">|</span>
-
-              {/* Botón desplegable para contraseña */}
-              <motion.button
-                type="button"
-                whileTap={{ scale: 0.94 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsCredsOpen(!isCredsOpen);
-                }}
-                className="inline-flex items-center gap-0.5 text-[10px] font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
-                title={isCredsOpen ? 'Ocultar contraseña' : 'Ver contraseña'}
-              >
-                <span>Clave</span>
-                {isCredsOpen ? <ChevronUp className="w-2.5 h-2.5" /> : <ChevronDown className="w-2.5 h-2.5" />}
-              </motion.button>
-            </div>
-
-            {/* Despliegue compacto de contraseña */}
-            <AnimatePresence>
-              {isCredsOpen && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                  animate={{ opacity: 1, height: 'auto', marginTop: 4 }}
-                  exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="overflow-hidden"
-                >
-                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-zinc-50 dark:bg-zinc-900/80 border border-zinc-200/50 dark:border-white/10 text-[11px] text-zinc-600 dark:text-zinc-400">
-                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium">Clave:</span>
-                    <span className="font-mono text-zinc-700 dark:text-zinc-300 text-xs">
-                      {showPassword ? job.platformPass : '••••••••'}
-                    </span>
-                    <motion.button
-                      type="button"
-                      whileTap={{ scale: 0.88 }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowPassword(!showPassword);
-                      }}
-                      className="p-1 rounded text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 transition-colors"
-                      title={showPassword ? 'Ocultar' : 'Ver'}
-                      aria-label={showPassword ? 'Ocultar clave' : 'Ver clave'}
-                    >
-                      {showPassword ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                    </motion.button>
-                    <motion.button
-                      type="button"
-                      whileTap={{ scale: 0.88 }}
-                      onClick={(e) => copyField(job.platformPass, 'pass', e)}
-                      className="p-1 -mr-0.5 rounded text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 transition-colors"
-                      title="Copiar contraseña"
-                      aria-label="Copiar contraseña"
-                    >
-                      {copiedField === 'pass' ? (
-                        <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                      ) : (
-                        <Copy className="w-3 h-3" />
-                      )}
-                    </motion.button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <CredentialsPopover
+              platform={job.platform}
+              platformUser={job.platformUser}
+              platformPass={job.platformPass}
+            />
           </div>
 
           {/* Progreso esbelto y Entregables (Linear / Things 3 style) */}

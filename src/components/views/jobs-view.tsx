@@ -5,6 +5,8 @@ import { useWorkspace } from '@/context/workspace-context';
 import { ClientJob } from '@/types/organizer';
 import { EditJobModal } from '@/components/jobs/edit-job-modal';
 import { PartialPaymentModal } from '@/components/jobs/partial-payment-modal';
+import { JobActionsMenu } from '@/components/jobs/job-actions-menu';
+import { AppTooltip } from '@/components/ui/rac-tooltip';
 import { Search, X, ChevronRight, Clock, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -176,12 +178,12 @@ export function JobsView() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por materia, cliente, plataforma..."
-            className="w-full pl-8.5 pr-8 py-2 rounded-xl bg-zinc-50 border border-zinc-200/70 text-xs sm:text-sm text-zinc-900 placeholder:text-zinc-400 focus:bg-white focus:outline-none focus:border-zinc-300 transition-colors"
+            className="w-full pl-8.5 pr-8 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200/70 dark:border-white/10 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:bg-white dark:focus:bg-zinc-900 focus:outline-none focus:border-zinc-300 dark:focus:border-white/20 transition-colors"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-zinc-400 hover:text-zinc-700"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
               aria-label="Limpiar búsqueda"
             >
               <X className="w-3.5 h-3.5" />
@@ -189,32 +191,43 @@ export function JobsView() {
           )}
         </div>
 
-        {/* Minimal Filter Pills */}
-        <div className="flex items-center gap-1 overflow-x-auto pb-0.5 select-none shrink-0 text-xs">
+        {/* Minimal Filter Pills with Liquid layoutId sliding indicator */}
+        <div className="flex items-center gap-1 p-1 bg-zinc-100/90 dark:bg-zinc-900/90 border border-zinc-200/60 dark:border-white/10 rounded-xl overflow-x-auto pb-0.5 select-none shrink-0 text-xs">
           {[
             { id: 'all', label: 'Todos', count: jobs.length },
             { id: 'in_progress', label: 'Pendientes', count: jobs.filter((j) => j.status !== 'delivered').length },
             { id: 'delivered', label: 'Entregados', count: jobs.filter((j) => j.status === 'delivered').length },
             { id: 'debt', label: 'Con Saldo', count: totalDebtCount },
           ].map((item) => (
-            <button
+            <motion.button
               key={item.id}
+              type="button"
+              whileTap={{ scale: 0.96 }}
               onClick={() => setFilter(item.id as FilterType)}
-              className={`px-2.5 py-1.5 rounded-lg font-medium transition-colors shrink-0 flex items-center gap-1.5 ${
+              className={`relative px-2.5 py-1.5 rounded-lg font-medium transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer ${
                 filter === item.id
-                  ? 'bg-zinc-900 text-white font-semibold'
-                  : 'bg-zinc-100/80 text-zinc-600 hover:bg-zinc-200/70'
+                  ? 'text-zinc-950 dark:text-zinc-100 font-semibold'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
             >
-              <span>{item.label}</span>
+              {filter === item.id && (
+                <motion.div
+                  layoutId="jobsFilterPill"
+                  className="absolute inset-0 bg-white dark:bg-zinc-800 rounded-lg shadow-xs"
+                  transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10">{item.label}</span>
               <span
-                className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono tabular-nums ${
-                  filter === item.id ? 'bg-white/20 text-white' : 'bg-white text-zinc-600 border border-zinc-200/50'
+                className={`relative z-10 text-[10px] px-1.5 py-0.2 rounded-full font-mono tabular-nums ${
+                  filter === item.id
+                    ? 'bg-zinc-100 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100'
+                    : 'bg-zinc-200/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
                 }`}
               >
                 {item.count}
               </span>
-            </button>
+            </motion.button>
           ))}
         </div>
       </div>
@@ -225,13 +238,13 @@ export function JobsView() {
           <div key={group.id} className="space-y-1.5">
             {/* Clean Typographic Separator */}
             <div className="flex items-center gap-2 pt-2 pb-0.5 px-1 select-none">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 {group.title}
               </span>
-              <span className="text-[10px] font-mono font-medium px-1.5 py-0.2 rounded-full bg-zinc-100 text-zinc-600">
+              <span className="text-[10px] font-mono font-medium px-1.5 py-0.2 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
                 {group.jobs.length}
               </span>
-              <div className="flex-1 h-px bg-zinc-200/60" />
+              <div className="flex-1 h-px bg-zinc-200/60 dark:bg-white/10" />
             </div>
 
             {/* Well-spaced Cards without aggressive truncation */}
@@ -249,59 +262,69 @@ export function JobsView() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.15 }}
                     onClick={() => setSelectedJobForEdit(job)}
-                    className="group relative flex flex-col justify-between p-3 sm:p-3.5 rounded-xl bg-white border border-zinc-200/75 hover:border-zinc-300 hover:shadow-xs transition-all cursor-pointer active:scale-[0.995]"
+                    className="group relative flex flex-col justify-between p-3 sm:p-3.5 rounded-xl bg-white dark:bg-[#121215] border border-zinc-200/75 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20 hover:shadow-xs transition-all cursor-pointer active:scale-[0.995]"
                   >
-                    {/* Fila superior: [Materia en pastilla sutil] + [Entregado] y a la derecha Límite */}
+                    {/* Fila superior: [Materia en pastilla sutil] + [Entregado] y a la derecha Límite + RAC Action Menu */}
                     <div className="flex items-center justify-between gap-2 mb-1.5">
                       <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-                        <span className="text-[11px] font-semibold text-zinc-700 bg-zinc-100/90 px-2 py-0.5 rounded-md tracking-tight">
+                        <span className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 bg-zinc-100/90 dark:bg-zinc-800/90 px-2 py-0.5 rounded-md tracking-tight">
                           {job.subject}
                         </span>
                         {job.platform && (
-                          <span className="text-[10px] font-mono font-medium text-zinc-400 bg-zinc-50 px-1.5 py-0.5 rounded border border-zinc-200/50">
+                          <span className="text-[10px] font-mono font-medium text-zinc-400 dark:text-zinc-500 bg-zinc-50 dark:bg-zinc-900/60 px-1.5 py-0.5 rounded border border-zinc-200/50 dark:border-white/10">
                             {job.platform}
                           </span>
                         )}
                         {isDelivered && (
-                          <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/60">
-                            <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
+                          <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200/60 dark:border-emerald-800/40">
+                            <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" />
                             Entregado
                           </span>
                         )}
                       </div>
 
-                      {/* Right: Badge de fecha limpio */}
-                      <span
-                        className={`text-[11px] font-mono font-medium px-2 py-0.5 rounded-md border flex items-center gap-1 shrink-0 ${
-                          deadline.isUrgent
-                            ? 'bg-amber-50/90 text-amber-900 border-amber-200/70 font-semibold'
-                            : 'bg-zinc-50 text-zinc-600 border-zinc-200/60'
-                        }`}
-                      >
-                        <Clock className="w-3 h-3 text-zinc-400 shrink-0" />
-                        <span>{deadline.label}</span>
-                      </span>
+                      {/* Right: Badge de fecha limpio + Menu contextual RAC */}
+                      <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                        <AppTooltip content="Fecha y hora límite de entrega">
+                          <span
+                            className={`text-[11px] font-mono font-medium px-2 py-0.5 rounded-md border flex items-center gap-1 shrink-0 ${
+                              deadline.isUrgent
+                                ? 'bg-amber-50/90 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border-amber-200/70 dark:border-amber-800/40 font-semibold'
+                                : 'bg-zinc-50 dark:bg-zinc-900/60 text-zinc-600 dark:text-zinc-400 border-zinc-200/60 dark:border-white/10'
+                            }`}
+                          >
+                            <Clock className="w-3 h-3 text-zinc-400 dark:text-zinc-500 shrink-0" />
+                            <span>{deadline.label}</span>
+                          </span>
+                        </AppTooltip>
+
+                        <JobActionsMenu
+                          job={job}
+                          onEdit={() => setSelectedJobForEdit(job)}
+                          onPayment={() => setSelectedJobForPayment(job)}
+                        />
+                      </div>
                     </div>
 
                     {/* Fila central: Título del trabajo (claro, completo, en negrita legible) */}
                     <div className="my-1">
-                      <h3 className="text-sm font-semibold text-zinc-900 leading-snug break-words">
+                      <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 leading-snug break-words">
                         {job.title}
                       </h3>
                     </div>
 
                     {/* Fila inferior: Nombre del cliente a la izquierda, y a la derecha $Total + badge de Saldo */}
-                    <div className="flex items-center justify-between gap-2 pt-2 mt-1 border-t border-zinc-100">
+                    <div className="flex items-center justify-between gap-2 pt-2 mt-1 border-t border-zinc-100 dark:border-white/10">
                       {/* Left: Nombre del cliente */}
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="text-xs font-medium text-zinc-600 truncate">
+                        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 truncate">
                           {job.clientName}
                         </span>
                       </div>
 
                       {/* Right: Precio + Saldo + Flecha */}
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-xs font-bold text-zinc-900 font-mono tabular-nums">
+                        <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 font-mono tabular-nums">
                           ${job.totalPrice.toLocaleString()} {job.currency || 'COP'}
                         </span>
 
@@ -312,18 +335,18 @@ export function JobsView() {
                               e.stopPropagation();
                               setSelectedJobForPayment(job);
                             }}
-                            className="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200/60 font-mono tabular-nums transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 px-1.5 py-0.5 rounded border border-amber-200/60 dark:border-amber-800/40 font-mono tabular-nums transition-colors cursor-pointer"
                             title="Registrar abono directo"
                           >
                             <span>Debe ${jobDebt.toLocaleString()}</span>
                           </button>
                         ) : (
-                          <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/40">
+                          <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200/40 dark:border-emerald-800/40">
                             Al día
                           </span>
                         )}
 
-                        <div className="flex items-center text-zinc-400 group-hover:text-zinc-700 group-hover:translate-x-0.5 transition-all">
+                        <div className="flex items-center text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200 group-hover:translate-x-0.5 transition-all">
                           <ChevronRight className="w-4 h-4" />
                         </div>
                       </div>

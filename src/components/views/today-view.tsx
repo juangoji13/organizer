@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { spring } from '@animate-ui/react/utils/motion';
+import { AppTooltip } from '@/components/ui/rac-tooltip';
 
 type TodaySection = 'clients' | 'personal';
 
@@ -69,19 +70,21 @@ export function TodayView() {
                 {urgentJobs.length} {urgentJobs.length === 1 ? 'encargo' : 'encargos'} para hoy
               </span>
               <span className="text-zinc-300 dark:text-zinc-600">•</span>
-              {/* Quick Link to Finance & Cobros */}
-              <motion.button
-                type="button"
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setActiveTab('finance')}
-                className="font-mono tabular-nums text-zinc-700 dark:text-zinc-300 font-medium hover:text-zinc-950 dark:hover:text-white flex items-center gap-1 group transition-colors"
-                title="Ir a Finanzas & Cobros"
-              >
-                <span className="underline underline-offset-2">
-                  ${todayPendingDebt.toLocaleString('es-CO')} COP por liquidar
-                </span>
-                <CreditCard className="w-3.5 h-3.5 text-zinc-400 group-hover:text-zinc-800 dark:group-hover:text-zinc-200 transition-colors" />
-              </motion.button>
+              {/* Quick Link to Finance & Cobros with RAC Tooltip */}
+              <AppTooltip content="Ir a Finanzas & Cobros para gestionar cobros y abonos">
+                <motion.button
+                  type="button"
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setActiveTab('finance')}
+                  className="font-mono tabular-nums text-zinc-700 dark:text-zinc-300 font-medium hover:text-zinc-950 dark:hover:text-white flex items-center gap-1 group transition-colors cursor-pointer"
+                  aria-label="Ir a Finanzas & Cobros"
+                >
+                  <span className="underline underline-offset-2">
+                    ${todayPendingDebt.toLocaleString('es-CO')} COP por liquidar
+                  </span>
+                  <CreditCard className="w-3.5 h-3.5 text-zinc-400 group-hover:text-zinc-800 dark:group-hover:text-zinc-200 transition-colors" />
+                </motion.button>
+              </AppTooltip>
             </div>
           </div>
         </div>
