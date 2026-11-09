@@ -45,147 +45,10 @@ interface WorkspaceContextType {
 
 const WorkspaceContext = createContext<WorkspaceContextType | undefined>(undefined);
 
-const INITIAL_JOBS: ClientJob[] = [
-  {
-    id: 'b0000000-0000-0000-0000-000000000001',
-    clientName: 'Carlos Mendoza',
-    clientPhone: '573001234567',
-    subject: 'Inglés Connect',
-    title: 'Corte 2 - Actividades y Tests',
-    deadlineTime: '11:59 PM',
-    deadlineDate: '2026-11-08',
-    isUrgentToday: true,
-    totalPrice: 60000,
-    paidAmount: 30000,
-    currency: 'COP',
-    platform: 'McGraw-Hill Connect',
-    platformUser: 'carlos.m@uninorte.edu.co',
-    platformPass: 'Connect2024!',
-    status: 'in_progress',
-    deliverables: [
-      { id: '19a3b302-aa09-4dc3-b6e6-1ce865a0e912', title: 'Assignment 1 (Vocabulary Unit 4)', isCompleted: true },
-      { id: 'd1c63225-c6f8-4f5a-8888-7250dca3d4ff', title: 'Assignment 2 (Grammar Practice)', isCompleted: true },
-      { id: '4ff1968f-5587-46a7-876e-9fe68e23b611', title: 'Assignment 3 (Reading Comprehension)', isCompleted: true },
-      { id: '0a694af5-8306-40b7-981e-261edddda304', title: 'Assignment 4 (Listening Section)', isCompleted: true },
-      { id: '51664843-5360-4f90-9fcf-ec1d4d2c8275', title: 'Assignment 5 (Speaking Prompt)', isCompleted: false },
-      { id: '0e9f72d1-0426-42b7-bdc4-f37ed1b0f82b', title: 'Test Unit 4', isCompleted: false },
-      { id: '38e888b1-c956-45e7-8528-b73eeaa52fa7', title: 'Progress Check Test', isCompleted: false },
-    ],
-  },
-  {
-    id: 'b0000000-0000-0000-0000-000000000002',
-    clientName: 'Andrés Felipe',
-    clientPhone: '573109876543',
-    subject: 'Cálculo Integral',
-    title: 'Taller 3: Integración por Partes',
-    deadlineTime: '6:00 PM',
-    deadlineDate: '2026-11-08',
-    isUrgentToday: true,
-    totalPrice: 45000,
-    paidAmount: 45000,
-    currency: 'COP',
-    platform: 'Teams / Aula Virtual',
-    platformUser: 'afelipe_9',
-    platformPass: 'UdeA2024*',
-    status: 'in_progress',
-    deliverables: [
-      { id: 'd-21', title: 'Ejercicios 1 a 5 (Método tabular)', isCompleted: true },
-      { id: 'd-22', title: 'Ejercicios 6 a 10 (Funciones trigonométricas)', isCompleted: true },
-      { id: 'd-23', title: 'Problema de aplicación física', isCompleted: false },
-    ],
-  },
-  {
-    id: 'b0000000-0000-0000-0000-000000000003',
-    clientName: 'Mariana Silva',
-    clientPhone: '573155554433',
-    subject: 'Microeconomía',
-    title: 'Taller 2: Equilibrio de Mercado',
-    deadlineTime: '4:00 PM',
-    deadlineDate: '2026-11-12',
-    isUrgentToday: false,
-    totalPrice: 50000,
-    paidAmount: 25000,
-    currency: 'COP',
-    platform: 'Moodle',
-    platformUser: 'msilva',
-    platformPass: 'Eco2024#',
-    status: 'in_progress',
-    deliverables: [
-      { id: 'd-31', title: 'Curvas de oferta y demanda', isCompleted: true },
-      { id: 'd-32', title: 'Elasticidad precio de la demanda', isCompleted: false },
-      { id: 'd-33', title: 'Monopolio natural y fijación de precios', isCompleted: false },
-    ],
-  },
-  {
-    id: 'b0000000-0000-0000-0000-000000000004',
-    clientName: 'Camilo Torres',
-    clientPhone: '573009988776',
-    subject: 'Física Mecánica',
-    title: 'Informe de Laboratorio 4',
-    deadlineTime: '10:00 PM',
-    deadlineDate: '2026-11-13',
-    isUrgentToday: false,
-    totalPrice: 40000,
-    paidAmount: 40000,
-    currency: 'COP',
-    platform: 'Google Classroom',
-    platformUser: 'c_torres',
-    platformPass: 'Mecanica99',
-    status: 'in_progress',
-    deliverables: [
-      { id: 'd-41', title: 'Tablas de datos experimentales', isCompleted: true },
-      { id: 'd-42', title: 'Gráficas en Excel y cálculo de errores', isCompleted: true },
-      { id: 'd-43', title: 'Análisis de resultados', isCompleted: true },
-      { id: 'd-44', title: 'Conclusiones y bibliografía IEEE', isCompleted: false },
-    ],
-  },
-];
-
-const INITIAL_RAW_CLIENTS = [
-  { id: 'c0000000-0000-0000-0000-000000000001', name: 'Carlos Mendoza', phone: '573001234567' },
-  { id: 'c0000000-0000-0000-0000-000000000002', name: 'Mariana Silva', phone: '573155554433' },
-  { id: 'c0000000-0000-0000-0000-000000000003', name: 'David R.', phone: '573017778899' },
-  { id: 'c0000000-0000-0000-0000-000000000004', name: 'Andrés Felipe', phone: '573109876543' },
-  { id: 'c0000000-0000-0000-0000-000000000005', name: 'Camilo Torres', phone: '573009988776' },
-];
-
-const INITIAL_PERSONAL: PersonalGoal[] = [
-  {
-    id: 'fd873e60-1d9c-436a-a3a9-9e7a22df1452',
-    category: 'study',
-    title: 'Preparación Examen Final de Algoritmos',
-    description: 'Repasar árboles binarios y programación dinámica',
-    isDone: false,
-  },
-  {
-    id: 'pg-2',
-    category: 'study',
-    title: 'Entrega Proyecto de Bases de Datos',
-    description: 'Normalización 3FN y diagramas relacionales en Supabase',
-    isDone: true,
-  },
-  {
-    id: 'pg-3',
-    category: 'dev',
-    title: 'Refactorizar API de facturación personal',
-    description: 'Migrar endpoints a Next.js Server Actions y Turbopack',
-    isDone: false,
-  },
-  {
-    id: 'pg-4',
-    category: 'savings',
-    title: 'Fondo de Ahorro: Nueva Laptop M3',
-    currentAmount: 1800000,
-    targetAmount: 4500000,
-  },
-  {
-    id: 'pg-5',
-    category: 'savings',
-    title: 'Colchón de Emergencias Semestral',
-    currentAmount: 850000,
-    targetAmount: 1500000,
-  },
-];
+// Clean Production Datasets (Ready for Real User Operation)
+const INITIAL_JOBS: ClientJob[] = [];
+const INITIAL_RAW_CLIENTS: Array<{ id: string; name: string; phone: string }> = [];
+const INITIAL_PERSONAL: PersonalGoal[] = [];
 
 function formatTimeString(isoString: string): string {
   try {
@@ -400,7 +263,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         `)
         .order('due_date', { ascending: true });
 
-      if (!jobsError && dbJobs && dbJobs.length > 0) {
+      if (!jobsError && dbJobs) {
         const mappedJobs: ClientJob[] = dbJobs.map((item: any) => {
           const client = item.clients || {};
           const dueDateStr = item.due_date || '';
@@ -445,7 +308,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         .from('clients')
         .select('id, name, phone');
 
-      if (!clientsError && dbClients && dbClients.length > 0) {
+      if (!clientsError && dbClients) {
         setRawClients(
           dbClients.map((c: any) => ({
             id: c.id,
@@ -460,7 +323,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         .from('personal_items')
         .select('*');
 
-      if (!personalError && dbPersonal && dbPersonal.length > 0) {
+      if (!personalError && dbPersonal) {
         const mappedPersonal: PersonalGoal[] = dbPersonal.map((p: any) => {
           let category: 'study' | 'dev' | 'savings' | 'note' = 'study';
           if (p.type === 'savings') category = 'savings';
