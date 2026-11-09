@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence, useDragControls, type Variants } from 'motion/react';
 import { ease, useShouldReduceMotion } from '@animate-ui/react/utils/motion';
+import { triggerDeliveryCelebration, triggerPaymentCelebration, triggerTactilePop } from '@/lib/celebrations';
 
 export interface UniversalCreateModalProps {
   isOpen: boolean;
@@ -390,13 +391,13 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
 
   // Select a Mode Bubble with Kinetic Micro-Pulse & Smooth Form Entrance
   const handleBubbleSelect = (modeId: ModalMode) => {
-    triggerHaptic(14);
+    triggerTactilePop(25);
     setSelectedBubble(modeId);
     // Micro-delay gives user tactile feedback of the active ring pulse before transitioning
     setTimeout(() => {
       setActiveMode(modeId);
       setValidationErrors({});
-    }, 110);
+    }, 120);
   };
 
   // Back to Hub
@@ -452,6 +453,7 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
         deliverables: deliverablesToSave,
       });
 
+      triggerDeliveryCelebration();
       handleCloseAndReset();
     } catch (err) {
       console.error('Failed to create job:', err);
@@ -677,24 +679,28 @@ export function UniversalCreateModal({ isOpen, onClose, initialType }: Universal
                                   )}
                                 </AnimatePresence>
 
-                                {/* Airy Circular Bubble / Orb */}
+                                {/* Volumetric 3D Kinetic Orb */}
                                 <div
-                                  className={`relative w-16 h-16 sm:w-18 sm:h-18 rounded-full flex items-center justify-center backdrop-blur-md border shadow-lg shadow-zinc-900/5 dark:shadow-black/40 transition-all duration-200 ${mode.colors.lightBg} ${mode.colors.darkBg}`}
+                                  className={`relative w-16 h-16 sm:w-18 sm:h-18 rounded-full flex items-center justify-center backdrop-blur-md border shadow-xl shadow-zinc-900/10 dark:shadow-black/60 transition-all duration-200 ${mode.colors.lightBg} ${mode.colors.darkBg}`}
                                   style={
                                     isSelected
                                       ? {
-                                          boxShadow: `0 0 20px ${mode.colors.glowRgba}`,
+                                          boxShadow: `0 0 28px ${mode.colors.glowRgba}, inset 0 -4px 10px rgba(0,0,0,0.15)`,
                                         }
-                                      : undefined
+                                      : {
+                                          boxShadow: `0 10px 20px -3px rgba(0,0,0,0.12), inset 0 -3px 8px rgba(0,0,0,0.08)`,
+                                        }
                                   }
                                 >
-                                  {/* Glassmorphic Specular Highlights */}
-                                  <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/60 via-white/10 to-transparent dark:from-white/15 dark:via-transparent pointer-events-none" />
-                                  <div className="absolute inset-0 rounded-full border border-white/40 dark:border-white/10 pointer-events-none" />
+                                  {/* Spherical Radial Light Gradient */}
+                                  <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_32%_28%,rgba(255,255,255,0.75)_0%,rgba(255,255,255,0.1)_45%,transparent_75%)] dark:bg-[radial-gradient(circle_at_32%_28%,rgba(255,255,255,0.25)_0%,rgba(255,255,255,0.04)_45%,transparent_75%)] pointer-events-none" />
+                                  
+                                  {/* 3D Specular Highlight Dot */}
+                                  <div className="absolute top-2.5 left-3 w-3 h-1.5 rounded-full bg-white/80 dark:bg-white/40 blur-[0.4px] rotate-[-25deg] pointer-events-none" />
 
-                                  {/* Crisp Centered Icon */}
+                                  {/* Crisp Centered Icon with micro-spring */}
                                   <Icon
-                                    className={`w-7 h-7 sm:w-8 sm:h-8 transition-transform duration-200 group-hover:scale-110 group-active:scale-95 ${mode.colors.lightIcon} ${mode.colors.darkIcon}`}
+                                    className={`w-7 h-7 sm:w-8 sm:h-8 transition-transform duration-200 group-hover:scale-115 group-active:scale-90 ${mode.colors.lightIcon} ${mode.colors.darkIcon} drop-shadow-xs`}
                                   />
                                 </div>
 

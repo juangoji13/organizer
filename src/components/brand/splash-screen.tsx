@@ -82,11 +82,12 @@ export function SplashScreen({ forceShow = false, onFinish }: SplashScreenProps)
 
           {/* Center Brand Identity Composition */}
           <div className="relative z-10 flex flex-col items-center">
-            {/* 1. Kinetic SVG Logo */}
+            {/* 1. Kinetic SVG Logo with 3D Perspective Flip */}
             <motion.div
-              initial={{ scale: 0.85, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ scale: 0.75, rotateY: 65, opacity: 0 }}
+              animate={{ scale: 1, rotateY: 0, opacity: 1 }}
+              transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
+              style={{ perspective: 1000 }}
             >
               <NexoLogo size="xl" animated={true} />
             </motion.div>

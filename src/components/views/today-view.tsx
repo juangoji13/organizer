@@ -15,6 +15,7 @@ import {
 import { motion } from 'motion/react';
 import { spring } from '@animate-ui/react/utils/motion';
 import { AppTooltip } from '@/components/ui/rac-tooltip';
+import { SlidingNumber } from '@animate-ui/react/primitives/texts/sliding-number';
 
 type TodaySection = 'clients' | 'personal';
 
@@ -79,9 +80,16 @@ export function TodayView() {
                   className="font-mono tabular-nums text-zinc-700 dark:text-zinc-300 font-medium hover:text-zinc-950 dark:hover:text-white flex items-center gap-1 group transition-colors cursor-pointer"
                   aria-label="Ir a Finanzas & Cobros"
                 >
-                  <span className="underline underline-offset-2">
-                    ${todayPendingDebt.toLocaleString('es-CO')} COP por liquidar
+                  <span className="underline underline-offset-2 flex items-center gap-0.5">
+                    $<SlidingNumber number={todayPendingDebt} thousandSeparator="." /> COP por liquidar
                   </span>
+                  {todayPendingDebt > 0 && (
+                    <motion.span
+                      animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                      className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]"
+                    />
+                  )}
                   <CreditCard className="w-3.5 h-3.5 text-zinc-400 group-hover:text-zinc-800 dark:group-hover:text-zinc-200 transition-colors" />
                 </motion.button>
               </AppTooltip>

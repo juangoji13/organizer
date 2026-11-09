@@ -10,6 +10,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { triggerTactilePop } from '@/lib/celebrations';
 
 interface BottomNavProps {
   onOpenCreateModal?: () => void;
@@ -62,12 +63,23 @@ export function BottomNav({ onOpenCreateModal }: BottomNavProps) {
           <span className="text-[10px] mt-0.5 tracking-tight">Trabajos</span>
         </button>
 
-        {/* Tab 3: Central Action (+) Ergonomic Creator */}
-        <div className="flex-1 flex justify-center items-center">
+        {/* Tab 3: Central Action (+) Ergonomic Creator with Magnetic Micro-Aura */}
+        <div className="flex-1 flex justify-center items-center relative">
+          {/* Subtle Ambient Pulse Ring */}
+          <motion.div
+            animate={{ scale: [1, 1.25, 1], opacity: [0.15, 0.4, 0.15] }}
+            transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute w-12 h-12 rounded-full bg-zinc-900 dark:bg-white blur-md pointer-events-none"
+          />
           <motion.button
-            whileTap={{ scale: 0.92 }}
-            onClick={onOpenCreateModal}
-            className="w-12 h-12 rounded-full bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.18)] hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.9, rotate: 90 }}
+            transition={{ type: 'spring', stiffness: 450, damping: 20 }}
+            onClick={() => {
+              triggerTactilePop(15);
+              onOpenCreateModal?.();
+            }}
+            className="relative z-10 w-12 h-12 rounded-full bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 flex items-center justify-center shadow-[0_4px_16px_rgba(0,0,0,0.24)] hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors cursor-pointer"
             title="Crear nuevo registro"
             aria-label="Crear nuevo registro"
           >

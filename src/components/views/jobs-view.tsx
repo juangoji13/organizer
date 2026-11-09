@@ -9,6 +9,9 @@ import { JobActionsMenu } from '@/components/jobs/job-actions-menu';
 import { AppTooltip } from '@/components/ui/rac-tooltip';
 import { Search, X, ChevronRight, Clock, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Tilt, TiltContent } from '@animate-ui/react/primitives/effects/tilt';
+import { Shine } from '@animate-ui/react/primitives/effects/shine';
+import { SlidingNumber } from '@animate-ui/react/primitives/texts/sliding-number';
 
 type FilterType = 'all' | 'in_progress' | 'delivered' | 'debt';
 
@@ -236,10 +239,17 @@ export function JobsView() {
       <div className="space-y-4">
         {groupedJobs.map((group) => (
           <div key={group.id} className="space-y-1.5">
-            {/* Clean Typographic Separator */}
+            {/* Clean Typographic Separator with Kinetic Status Indicator */}
             <div className="flex items-center gap-2 pt-2 pb-0.5 px-1 select-none">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
                 {group.title}
+                {group.id === 'today' && (
+                  <motion.span
+                    animate={{ scale: [1, 1.35, 1], opacity: [0.65, 1, 0.65] }}
+                    transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                    className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.7)] inline-block"
+                  />
+                )}
               </span>
               <span className="text-[10px] font-mono font-medium px-1.5 py-0.2 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
                 {group.jobs.length}
@@ -247,7 +257,7 @@ export function JobsView() {
               <div className="flex-1 h-px bg-zinc-200/60 dark:bg-white/10" />
             </div>
 
-            {/* Well-spaced Cards without aggressive truncation */}
+            {/* Well-spaced Cards without aggressive truncation with 3D Tilt and Specular Shine */}
             <div className="space-y-2">
               {group.jobs.map((job) => {
                 const jobDebt = Math.max(0, job.totalPrice - job.paidAmount);
@@ -255,103 +265,108 @@ export function JobsView() {
                 const deadline = formatDeadlineBadge(job.deadlineDate, job.deadlineTime);
 
                 return (
-                  <motion.div
-                    key={job.id}
-                    layout
-                    initial={{ opacity: 0, y: 3 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.15 }}
-                    onClick={() => setSelectedJobForEdit(job)}
-                    className="group relative flex flex-col justify-between p-3 sm:p-3.5 rounded-xl bg-white dark:bg-[#121215] border border-zinc-200/75 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20 hover:shadow-xs transition-all cursor-pointer active:scale-[0.995]"
-                  >
-                    {/* Fila superior: [Materia en pastilla sutil] + [Entregado] y a la derecha Límite + RAC Action Menu */}
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-                        <span className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 bg-zinc-100/90 dark:bg-zinc-800/90 px-2 py-0.5 rounded-md tracking-tight">
-                          {job.subject}
-                        </span>
-                        {job.platform && (
-                          <span className="text-[10px] font-mono font-medium text-zinc-400 dark:text-zinc-500 bg-zinc-50 dark:bg-zinc-900/60 px-1.5 py-0.5 rounded border border-zinc-200/50 dark:border-white/10">
-                            {job.platform}
-                          </span>
-                        )}
-                        {isDelivered && (
-                          <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200/60 dark:border-emerald-800/40">
-                            <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" />
-                            Entregado
-                          </span>
-                        )}
-                      </div>
+                  <Tilt key={job.id} maxTilt={3} perspective={900}>
+                    <TiltContent>
+                      <motion.div
+                        layout
+                        initial={{ opacity: 0, y: 3 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.15 }}
+                        onClick={() => setSelectedJobForEdit(job)}
+                        className="group relative flex flex-col justify-between p-3 sm:p-3.5 rounded-xl bg-white dark:bg-[#121215] border border-zinc-200/75 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20 hover:shadow-xs transition-all cursor-pointer active:scale-[0.995] overflow-hidden"
+                      >
+                        <Shine enableOnHover={true} opacity={0.25} duration={1.4} color="rgba(255, 255, 255, 0.35)" deg={120}>
+                          {/* Fila superior: [Materia en pastilla sutil] + [Entregado] y a la derecha Límite + RAC Action Menu */}
+                          <div className="flex items-center justify-between gap-2 mb-1.5">
+                            <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+                              <span className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 bg-zinc-100/90 dark:bg-zinc-800/90 px-2 py-0.5 rounded-md tracking-tight">
+                                {job.subject}
+                              </span>
+                              {job.platform && (
+                                <span className="text-[10px] font-mono font-medium text-zinc-400 dark:text-zinc-500 bg-zinc-50 dark:bg-zinc-900/60 px-1.5 py-0.5 rounded border border-zinc-200/50 dark:border-white/10">
+                                  {job.platform}
+                                </span>
+                              )}
+                              {isDelivered && (
+                                <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200/60 dark:border-emerald-800/40">
+                                  <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" />
+                                  Entregado
+                                </span>
+                              )}
+                            </div>
 
-                      {/* Right: Badge de fecha limpio + Menu contextual RAC */}
-                      <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
-                        <AppTooltip content="Fecha y hora límite de entrega">
-                          <span
-                            className={`text-[11px] font-mono font-medium px-2 py-0.5 rounded-md border flex items-center gap-1 shrink-0 ${
-                              deadline.isUrgent
-                                ? 'bg-amber-50/90 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border-amber-200/70 dark:border-amber-800/40 font-semibold'
-                                : 'bg-zinc-50 dark:bg-zinc-900/60 text-zinc-600 dark:text-zinc-400 border-zinc-200/60 dark:border-white/10'
-                            }`}
-                          >
-                            <Clock className="w-3 h-3 text-zinc-400 dark:text-zinc-500 shrink-0" />
-                            <span>{deadline.label}</span>
-                          </span>
-                        </AppTooltip>
+                            {/* Right: Badge de fecha limpio + Menu contextual RAC */}
+                            <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                              <AppTooltip content="Fecha y hora límite de entrega">
+                                <span
+                                  className={`text-[11px] font-mono font-medium px-2 py-0.5 rounded-md border flex items-center gap-1 shrink-0 ${
+                                    deadline.isUrgent
+                                      ? 'bg-amber-50/90 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border-amber-200/70 dark:border-amber-800/40 font-semibold'
+                                      : 'bg-zinc-50 dark:bg-zinc-900/60 text-zinc-600 dark:text-zinc-400 border-zinc-200/60 dark:border-white/10'
+                                  }`}
+                                >
+                                  <Clock className="w-3 h-3 text-zinc-400 dark:text-zinc-500 shrink-0" />
+                                  <span>{deadline.label}</span>
+                                </span>
+                              </AppTooltip>
 
-                        <JobActionsMenu
-                          job={job}
-                          onEdit={() => setSelectedJobForEdit(job)}
-                          onPayment={() => setSelectedJobForPayment(job)}
-                        />
-                      </div>
-                    </div>
+                              <JobActionsMenu
+                                job={job}
+                                onEdit={() => setSelectedJobForEdit(job)}
+                                onPayment={() => setSelectedJobForPayment(job)}
+                              />
+                            </div>
+                          </div>
 
-                    {/* Fila central: Título del trabajo (claro, completo, en negrita legible) */}
-                    <div className="my-1">
-                      <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 leading-snug break-words">
-                        {job.title}
-                      </h3>
-                    </div>
+                          {/* Fila central: Título del trabajo (claro, completo, en negrita legible) */}
+                          <div className="my-1">
+                            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 leading-snug break-words">
+                              {job.title}
+                            </h3>
+                          </div>
 
-                    {/* Fila inferior: Nombre del cliente a la izquierda, y a la derecha $Total + badge de Saldo */}
-                    <div className="flex items-center justify-between gap-2 pt-2 mt-1 border-t border-zinc-100 dark:border-white/10">
-                      {/* Left: Nombre del cliente */}
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 truncate">
-                          {job.clientName}
-                        </span>
-                      </div>
+                          {/* Fila inferior: Nombre del cliente a la izquierda, y a la derecha $Total + badge de Saldo */}
+                          <div className="flex items-center justify-between gap-2 pt-2 mt-1 border-t border-zinc-100 dark:border-white/10">
+                            {/* Left: Nombre del cliente */}
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 truncate">
+                                {job.clientName}
+                              </span>
+                            </div>
 
-                      {/* Right: Precio + Saldo + Flecha */}
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 font-mono tabular-nums">
-                          ${job.totalPrice.toLocaleString()} {job.currency || 'COP'}
-                        </span>
+                            {/* Right: Precio + Saldo + Flecha */}
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 font-mono tabular-nums">
+                                ${job.totalPrice.toLocaleString()} {job.currency || 'COP'}
+                              </span>
 
-                        {jobDebt > 0 ? (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedJobForPayment(job);
-                            }}
-                            className="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 px-1.5 py-0.5 rounded border border-amber-200/60 dark:border-amber-800/40 font-mono tabular-nums transition-colors cursor-pointer"
-                            title="Registrar abono directo"
-                          >
-                            <span>Debe ${jobDebt.toLocaleString()}</span>
-                          </button>
-                        ) : (
-                          <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200/40 dark:border-emerald-800/40">
-                            Al día
-                          </span>
-                        )}
+                              {jobDebt > 0 ? (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedJobForPayment(job);
+                                  }}
+                                  className="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 px-1.5 py-0.5 rounded border border-amber-200/60 dark:border-amber-800/40 font-mono tabular-nums transition-colors cursor-pointer"
+                                  title="Registrar abono directo"
+                                >
+                                  <span>Debe $<SlidingNumber number={jobDebt} thousandSeparator="." /></span>
+                                </button>
+                              ) : (
+                                <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200/40 dark:border-emerald-800/40">
+                                  Al día
+                                </span>
+                              )}
 
-                        <div className="flex items-center text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200 group-hover:translate-x-0.5 transition-all">
-                          <ChevronRight className="w-4 h-4" />
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
+                              <div className="flex items-center text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200 group-hover:translate-x-0.5 transition-all">
+                                <ChevronRight className="w-4 h-4" />
+                              </div>
+                            </div>
+                          </div>
+                        </Shine>
+                      </motion.div>
+                    </TiltContent>
+                  </Tilt>
                 );
               })}
             </div>

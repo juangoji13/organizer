@@ -5,6 +5,10 @@ import { useWorkspace } from '@/context/workspace-context';
 import { MessageCircle, CheckCircle2, Target, CreditCard, Pencil, Check, X } from 'lucide-react';
 import { motion, animate } from 'motion/react';
 import { spring } from '@animate-ui/react/utils/motion';
+import { SlidingNumber } from '@animate-ui/react/primitives/texts/sliding-number';
+import { Tilt, TiltContent } from '@animate-ui/react/primitives/effects/tilt';
+import { Shine } from '@animate-ui/react/primitives/effects/shine';
+import { triggerMilestoneCelebration } from '@/lib/celebrations';
 import { PartialPaymentModal } from '@/components/jobs/partial-payment-modal';
 import { WhatsAppSummaryModal } from '@/components/finance/whatsapp-summary-modal';
 import { ClientJob } from '@/types/organizer';
@@ -344,26 +348,43 @@ export function FinanceView() {
               Meta Semanal de Ingresos
             </span>
           </div>
-          <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 font-mono tabular-nums">
-            <KineticNumber value={goalPercent} suffix="%" /> alcanzado
+          <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 font-mono tabular-nums flex items-center gap-1">
+            <SlidingNumber number={goalPercent} />% alcanzado
+            {goalPercent >= 100 && (
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.9 }}
+                onClick={triggerMilestoneCelebration}
+                className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-emerald-500 text-white animate-bounce cursor-pointer shadow-xs"
+                title="¡Meta superada! Toca para celebrar"
+              >
+                🎉 ¡Logrado!
+              </motion.button>
+            )}
           </span>
         </div>
 
-        {/* Kinetic Progress Bar with spring physics */}
-        <div className="w-full h-2.5 bg-zinc-100 dark:bg-zinc-800/80 rounded-full overflow-hidden mb-2.5">
+        {/* Kinetic Progress Bar with spring physics and glowing head */}
+        <div className="relative w-full h-2.5 bg-zinc-100 dark:bg-zinc-800/80 rounded-full overflow-hidden mb-2.5">
           <motion.div
             initial={{ width: '0%' }}
             animate={{ width: `${goalPercent}%` }}
             transition={{ type: 'spring', stiffness: 280, damping: 26 }}
-            className="h-full bg-zinc-900 dark:bg-zinc-100 rounded-full"
-          />
+            className="h-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-full relative"
+          >
+            <motion.div
+              animate={{ opacity: [0.6, 1, 0.6] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+              className="absolute right-0 top-0 bottom-0 w-2.5 bg-white rounded-full shadow-[0_0_8px_#ffffff]"
+            />
+          </motion.div>
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-zinc-500 dark:text-zinc-400">
           <span>
             Cobrado esta semana:{' '}
             <strong className="text-zinc-900 dark:text-zinc-100 font-mono font-bold tabular-nums">
-              <KineticNumber value={weekPaid} prefix="$" suffix=" COP" />
+              $<SlidingNumber number={weekPaid} thousandSeparator="." /> COP
             </strong>
           </span>
 
@@ -381,7 +402,7 @@ export function FinanceView() {
             >
               <span className="text-zinc-400 dark:text-zinc-500">Meta:</span>
               <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
-                <KineticNumber value={weeklyGoal} prefix="$" suffix=" COP" />
+                $<SlidingNumber number={weeklyGoal} thousandSeparator="." /> COP
               </span>
               <Pencil className="w-3 h-3 text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-200 transition-colors" />
             </motion.button>
@@ -488,8 +509,8 @@ export function FinanceView() {
             </div>
 
             <div className="flex items-baseline gap-2 pt-0.5">
-              <span className="text-3xl sm:text-4xl font-extrabold tracking-tight text-zinc-950 dark:text-zinc-50 font-mono tabular-nums">
-                <KineticNumber value={totalPaid} prefix="$" />
+              <span className="text-3xl sm:text-4xl font-extrabold tracking-tight text-zinc-950 dark:text-zinc-50 font-mono tabular-nums flex items-center">
+                $<SlidingNumber number={totalPaid} thousandSeparator="." />
               </span>
               <span className="text-xs sm:text-sm font-semibold text-zinc-400 dark:text-zinc-500 font-sans">
                 COP
@@ -521,11 +542,11 @@ export function FinanceView() {
 
             <div className="flex items-baseline gap-2 pt-0.5">
               <span
-                className={`text-3xl sm:text-4xl font-extrabold tracking-tight font-mono tabular-nums ${
+                className={`text-3xl sm:text-4xl font-extrabold tracking-tight font-mono tabular-nums flex items-center ${
                   totalPending > 0 ? 'text-amber-900 dark:text-amber-400' : 'text-zinc-400 dark:text-zinc-500'
                 }`}
               >
-                <KineticNumber value={totalPending} prefix="$" />
+                $<SlidingNumber number={totalPending} thousandSeparator="." />
               </span>
               <span className="text-xs sm:text-sm font-semibold text-zinc-400 dark:text-zinc-500 font-sans">
                 COP
@@ -543,7 +564,7 @@ export function FinanceView() {
           <div>
             Facturado total en este período:{' '}
             <strong className="text-zinc-900 dark:text-zinc-100 font-mono font-bold tabular-nums">
-              <KineticNumber value={totalBilled} prefix="$" suffix=" COP" />
+              $<SlidingNumber number={totalBilled} thousandSeparator="." /> COP
             </strong>
           </div>
           {totalPending > 0 && (

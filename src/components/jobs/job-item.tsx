@@ -14,6 +14,10 @@ import {
   Pencil
 } from 'lucide-react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'motion/react';
+import { Tilt, TiltContent } from '@animate-ui/react/primitives/effects/tilt';
+import { Shine } from '@animate-ui/react/primitives/effects/shine';
+import { SlidingNumber } from '@animate-ui/react/primitives/texts/sliding-number';
+import { triggerDeliveryCelebration, triggerPaymentCelebration, triggerTactilePop } from '@/lib/celebrations';
 import { PartialPaymentModal } from '@/components/jobs/partial-payment-modal';
 import { EditJobModal } from '@/components/jobs/edit-job-modal';
 import { CredentialsPopover } from '@/components/jobs/credentials-popover';
@@ -34,10 +38,13 @@ export function JobItem({ job }: JobItemProps) {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  // Motion values for GPU-composited swipe
+  // Motion values for GPU-composited 3D swipe and morphing background
   const x = useMotionValue(0);
-  const leftActionOpacity = useTransform(x, [0, 40, 85], [0, 0.45, 1]);
-  const rightActionOpacity = useTransform(x, [-85, -40, 0], [1, 0.45, 0]);
+  const rotateZ = useTransform(x, [-120, 0, 120], [-2.5, 0, 2.5]);
+  const leftActionOpacity = useTransform(x, [0, 30, 85], [0, 0.45, 1]);
+  const rightActionOpacity = useTransform(x, [-85, -30, 0], [1, 0.45, 0]);
+  const leftActionScale = useTransform(x, [0, 85], [0.85, 1.15]);
+  const rightActionScale = useTransform(x, [-85, 0], [1.15, 0.85]);
 
   const completedList = job.deliverables.filter((d) => d.isCompleted);
   const pendingList = job.deliverables.filter((d) => !d.isCompleted);
@@ -59,41 +66,46 @@ export function JobItem({ job }: JobItemProps) {
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-xl border border-zinc-200/80 dark:border-white/10 bg-white dark:bg-[#121215] shadow-[0_1px_3px_rgba(0,0,0,0.02)] hover:border-zinc-300 dark:hover:border-white/20 transition-colors">
-        {/* Background Swipe Actions Indicator */}
-        <div className="absolute inset-0 flex items-center justify-between px-5 pointer-events-none select-none bg-zinc-50 dark:bg-zinc-900/50">
-          <motion.div 
-            style={{ opacity: leftActionOpacity }}
-            className="flex items-center gap-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-400"
-          >
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <span>Marcar Entregado</span>
-          </motion.div>
-          <motion.div 
-            style={{ opacity: rightActionOpacity }}
-            className="flex items-center gap-1.5 text-xs font-semibold text-amber-900 dark:text-amber-400"
-          >
-            <span>Marcar Pagado</span>
-            <DollarSign className="w-4 h-4 text-amber-700 dark:text-amber-400" />
-          </motion.div>
-        </div>
+      <Tilt maxTilt={4} perspective={850}>
+        <TiltContent>
+          <div className="relative overflow-hidden rounded-xl border border-zinc-200/80 dark:border-white/10 bg-white dark:bg-[#121215] shadow-[0_1px_3px_rgba(0,0,0,0.02)] hover:border-zinc-300 dark:hover:border-white/20 transition-all">
+            <Shine enableOnHover={true} opacity={0.35} duration={1.5} color="rgba(255, 255, 255, 0.35)" deg={120}>
+              {/* Background Swipe Actions Indicator with Dynamic Morphing */}
+              <div className="absolute inset-0 flex items-center justify-between px-5 pointer-events-none select-none bg-zinc-50 dark:bg-zinc-900/50">
+                <motion.div 
+                  style={{ opacity: leftActionOpacity, scale: leftActionScale }}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-400"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span>Marcar Entregado</span>
+                </motion.div>
+                <motion.div 
+                  style={{ opacity: rightActionOpacity, scale: rightActionScale }}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-amber-900 dark:text-amber-400"
+                >
+                  <span>Marcar Pagado</span>
+                  <DollarSign className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+                </motion.div>
+              </div>
 
-        {/* Swipeable Main Card */}
-        <motion.div
-          style={{ x, touchAction: 'pan-y' }}
-          drag="x"
-          dragDirectionLock
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.25}
-          onDragEnd={(_, info) => {
-            if (info.offset.x > 85) {
-              markJobDelivered(job.id);
-            } else if (info.offset.x < -85) {
-              markJobPaid(job.id);
-            }
-          }}
-          className="relative bg-white dark:bg-[#121215] z-10 p-3.5 sm:p-4"
-        >
+              {/* Swipeable Main Card with 3D Z-tilt and Viscoelastic Snapping */}
+              <motion.div
+                style={{ x, rotateZ, touchAction: 'pan-y' }}
+                drag="x"
+                dragDirectionLock
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.25}
+                onDragEnd={(_, info) => {
+                  if (info.offset.x > 80) {
+                    markJobDelivered(job.id);
+                    triggerDeliveryCelebration();
+                  } else if (info.offset.x < -80) {
+                    markJobPaid(job.id);
+                    triggerPaymentCelebration();
+                  }
+                }}
+                className="relative bg-white dark:bg-[#121215] z-10 p-3.5 sm:p-4"
+              >
           {/* Header: Materia + Entregado + Límite + Editar */}
           <div className="flex items-center justify-between gap-2 mb-1.5">
             <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
@@ -175,7 +187,7 @@ export function JobItem({ job }: JobItemProps) {
                     className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono tabular-nums font-bold text-amber-900 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 border border-amber-200/60 dark:border-amber-800/40 transition-colors cursor-pointer"
                     aria-label="Registrar abono parcial"
                   >
-                    <span>Debe ${pendingDebt.toLocaleString()}</span>
+                    <span>Debe $<SlidingNumber number={pendingDebt} thousandSeparator="." /></span>
                   </motion.button>
                 </AppTooltip>
               ) : (
@@ -283,7 +295,10 @@ export function JobItem({ job }: JobItemProps) {
                           <input
                             type="checkbox"
                             checked={item.isCompleted}
-                            onChange={() => toggleDeliverable(job.id, item.id)}
+                            onChange={() => {
+                              toggleDeliverable(job.id, item.id);
+                              triggerTactilePop(15);
+                            }}
                             className="sr-only"
                           />
                           <div
@@ -334,7 +349,10 @@ export function JobItem({ job }: JobItemProps) {
                           <input
                             type="checkbox"
                             checked={item.isCompleted}
-                            onChange={() => toggleDeliverable(job.id, item.id)}
+                            onChange={() => {
+                              toggleDeliverable(job.id, item.id);
+                              triggerTactilePop(15);
+                            }}
                             className="sr-only"
                           />
                           <div className="w-3.5 h-3.5 rounded border border-zinc-700 dark:border-zinc-300 bg-zinc-800 dark:bg-zinc-200 text-white dark:text-zinc-900 flex items-center justify-center transition-all">
@@ -363,7 +381,10 @@ export function JobItem({ job }: JobItemProps) {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+            </Shine>
+          </div>
+        </TiltContent>
+      </Tilt>
 
       {/* Partial Payment Modal */}
       <PartialPaymentModal

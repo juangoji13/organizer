@@ -17,6 +17,7 @@ import {
   Briefcase
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { SlidingNumber } from '@animate-ui/react/primitives/texts/sliding-number';
 import { CreateClientModal } from '@/components/clients/create-client-modal';
 import { PartialPaymentModal } from '@/components/jobs/partial-payment-modal';
 import { EditJobModal } from '@/components/jobs/edit-job-modal';
@@ -259,7 +260,7 @@ export function ClientsView() {
                         className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-amber-900 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 px-2 py-1 rounded-md border border-amber-200/60 dark:border-amber-800/40 font-mono tabular-nums transition-colors cursor-pointer"
                         aria-label="Registrar abono"
                       >
-                        <span>Debe ${client.totalDeuda.toLocaleString()}</span>
+                        <span>Debe $<SlidingNumber number={client.totalDeuda} thousandSeparator="." /></span>
                       </button>
                     </AppTooltip>
                   ) : (
